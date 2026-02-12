@@ -1,0 +1,25 @@
+{
+  "id": "mb_temp_sensor_v1",
+  "name": "Modbus Temp Sensor",
+  "protocol": "Modbus",
+  "network": { "port": 1502, "bindIp": "127.0.0.1" },
+  "points": [
+    { 
+        "key": "temp_c", 
+        "type": "float32", 
+        "modbus": { "kind": "holding", "address": 0, "scale": 10.0 },
+        "generator": { "type": "sine", "min": 20, "max": 30, "periodSeconds": 10 }
+    },
+    { 
+        "key": "humidity", 
+        "type": "float32", 
+        "modbus": { "kind": "input", "address": 2, "scale": 10.0 },
+        "generator": { "type": "random", "min": 40, "max": 60, "periodSeconds": 5 }
+    },
+    { 
+        "key": "fan_status", 
+        "type": "bool", 
+        "modbus": { "kind": "coil", "address": 0 } 
+    }
+  ]
+}
