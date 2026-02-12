@@ -1,10 +1,14 @@
 # GridGhost 👻
 
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![Apache 2.0 License][license-shield]][license-url]
+[![GitHub License](https://img.shields.io/github/license/zEhmsy/gridghost?style=flat-square&logo=apache&color=orange)](https://github.com/zEhmsy/gridghost/blob/main/LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/zEhmsy/gridghost?style=flat-square&logo=github)](https://github.com/zEhmsy/gridghost/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/zEhmsy/gridghost?style=flat-square&logo=github)](https://github.com/zEhmsy/gridghost/network/members)
+[![GitHub Issues](https://img.shields.io/github/issues/zEhmsy/gridghost?style=flat-square&logo=github)](https://github.com/zEhmsy/gridghost/issues)
+
+[![.NET Version](https://img.shields.io/badge/.NET-8.0-512bd4?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/download/dotnet/8.0)
+[![Language](https://img.shields.io/badge/Language-C%23-239120?style=flat-square&logo=c-sharp)](https://docs.microsoft.com/en-us/dotnet/csharp/)
+[![Platform](https://img.shields.io/badge/Platform-Windows-0078d7?style=flat-square&logo=windows)](https://github.com/zEhmsy/gridghost/releases)
+[![Framework](https://img.shields.io/badge/Framework-Avalonia-8a2be2?style=flat-square)](https://avaloniaui.net/)
 
 GridGhost is a lightweight, high-performance Modbus (and soon BACnet) device simulator designed for BMS (Building Management System) testing, commissioning, and development. It allows engineers to simulate complex field devices with dynamic data generators without physical hardware.
 
