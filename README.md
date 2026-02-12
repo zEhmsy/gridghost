@@ -1,10 +1,26 @@
 # GridGhost 👻
 
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![Apache 2.0 License][license-shield]][license-url]
+
 GridGhost is a lightweight, high-performance Modbus (and soon BACnet) device simulator designed for BMS (Building Management System) testing, commissioning, and development. It allows engineers to simulate complex field devices with dynamic data generators without physical hardware.
+
+> [!IMPORTANT]
+> **Platform Support**: The current release provides a native **Windows Installer**. However, since GridGhost is built on .NET 8 and Avalonia UI, support for **Linux** and **macOS** is in the roadmap and technically compatible.
 
 ![GridGhost Logo](DeviceSim/DeviceSim.App/Assets/Icons/gridghost_icon.png)
 
 ## Features
+
+- **Multi-Protocol Support**: Modbus TCP (Fully implemented), BACnet (Roadmap).
+- **Direct Store Integration**: No polling loops. Modbus registers map directly to the internal simulation store for real-time reactivity.
+- **Dynamic Data Generators**:
+- ...
+- ...
+(I'll stop here or use multi_replace if needed, but the user asked to ADD to the readme. I'll replace the top section)
 
 - **Multi-Protocol Support**: Modbus TCP (Fully implemented), BACnet (Roadmap).
 - **Direct Store Integration**: No polling loops. Modbus registers map directly to the internal simulation store for real-time reactivity.
@@ -63,3 +79,15 @@ Licensed under the [Apache License, Version 2.0](LICENSE).
 
 ---
 *Created with ❤️ for the BMS community.*
+
+<!-- MARKDOWN LINKS & IMAGES -->
+[contributors-shield]: https://img.shields.io/github/contributors/zEhmsy/gridghost.svg?style=for-the-badge
+[contributors-url]: https://github.com/zEhmsy/gridghost/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/zEhmsy/gridghost.svg?style=for-the-badge
+[forks-url]: https://github.com/zEhmsy/gridghost/network/members
+[stars-shield]: https://img.shields.io/github/stars/zEhmsy/gridghost.svg?style=for-the-badge
+[stars-url]: https://github.com/zEhmsy/gridghost/stargazers
+[issues-shield]: https://img.shields.io/github/issues/zEhmsy/gridghost.svg?style=for-the-badge
+[issues-url]: https://github.com/zEhmsy/gridghost/issues
+[license-shield]: https://img.shields.io/github/license/zEhmsy/gridghost.svg?style=for-the-badge
+[license-url]: https://github.com/zEhmsy/gridghost/blob/main/LICENSE
