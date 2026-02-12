@@ -72,15 +72,3 @@ Licensed under the [Apache License, Version 2.0](LICENSE).
 
 ---
 *Created with ❤️ for the BMS community.*
-
-<!-- MARKDOWN LINKS & IMAGES -->
-[contributors-shield]: https://img.shields.io/github/contributors/zEhmsy/gridghost.svg?style=for-the-badge
-[contributors-url]: https://github.com/zEhmsy/gridghost/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/zEhmsy/gridghost.svg?style=for-the-badge
-[forks-url]: https://github.com/zEhmsy/gridghost/network/members
-[stars-shield]: https://img.shields.io/github/stars/zEhmsy/gridghost.svg?style=for-the-badge
-[stars-url]: https://github.com/zEhmsy/gridghost/stargazers
-[issues-shield]: https://img.shields.io/github/issues/zEhmsy/gridghost.svg?style=for-the-badge
-[issues-url]: https://github.com/zEhmsy/gridghost/issues
-[license-shield]: https://img.shields.io/github/license/zEhmsy/gridghost.svg?style=for-the-badge
-[license-url]: https://github.com/zEhmsy/gridghost/blob/main/LICENSE
