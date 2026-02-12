@@ -1,0 +1,83 @@
+{
+    "id": "mb_ahu_v2",
+    "name": "Modbus AHU",
+    "protocol": "Modbus",
+    "network": {
+        "port": 1502,
+        "bindIp": "127.0.0.1"
+    },
+    "points": [
+        {
+            "key": "supply_temp",
+            "type": "float32",
+            "initialValue": 18.0,
+            "modbus": {
+                "address": 0,
+                "kind": "Input",
+                "dataType": "Float32"
+            },
+            "simulator": {
+                "type": "Sinewave",
+                "min": 17,
+                "max": 19,
+                "periodSeconds": 45
+            }
+        },
+        {
+            "key": "return_temp",
+            "type": "float32",
+            "initialValue": 24.0,
+            "modbus": {
+                "address": 2,
+                "kind": "Input",
+                "dataType": "Float32"
+            },
+            "simulator": {
+                "type": "Sinewave",
+                "min": 23,
+                "max": 25,
+                "periodSeconds": 60
+            }
+        },
+        {
+            "key": "supply_fan_speed",
+            "type": "float32",
+            "initialValue": 80.0,
+            "modbus": {
+                "address": 10,
+                "kind": "Holding",
+                "dataType": "Float32"
+            }
+        },
+        {
+            "key": "return_fan_speed",
+            "type": "float32",
+            "initialValue": 75.0,
+            "modbus": {
+                "address": 12,
+                "kind": "Holding",
+                "dataType": "Float32"
+            }
+        },
+        {
+            "key": "filter_alarm",
+            "type": "bool",
+            "initialValue": false,
+            "modbus": {
+                "address": 100,
+                "kind": "Discrete",
+                "dataType": "Bool"
+            }
+        },
+        {
+            "key": "system_enable",
+            "type": "bool",
+            "initialValue": true,
+            "modbus": {
+                "address": 101,
+                "kind": "Coil",
+                "dataType": "Bool"
+            }
+        }
+    ]
+}

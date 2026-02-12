@@ -1,0 +1,79 @@
+{
+    "id": "mb_vav_v1",
+    "name": "Modbus VAV Controller",
+    "protocol": "Modbus",
+    "network": {
+        "port": 1502,
+        "bindIp": "127.0.0.1"
+    },
+    "points": [
+        {
+            "key": "room_temp",
+            "type": "float32",
+            "initialValue": 22.0,
+            "modbus": {
+                "address": 0,
+                "kind": "Input",
+                "dataType": "Float32"
+            },
+            "simulator": {
+                "type": "Sinewave",
+                "min": 21,
+                "max": 23,
+                "periodSeconds": 60
+            }
+        },
+        {
+            "key": "setpoint",
+            "type": "float32",
+            "initialValue": 22.0,
+            "modbus": {
+                "address": 10,
+                "kind": "Holding",
+                "dataType": "Float32"
+            }
+        },
+        {
+            "key": "damper_position",
+            "type": "float32",
+            "initialValue": 50.0,
+            "modbus": {
+                "address": 20,
+                "kind": "Input",
+                "dataType": "Float32"
+            },
+            "simulator": {
+                "type": "Sinewave",
+                "min": 0,
+                "max": 100,
+                "periodSeconds": 120
+            }
+        },
+        {
+            "key": "airflow",
+            "type": "float32",
+            "initialValue": 150.0,
+            "modbus": {
+                "address": 30,
+                "kind": "Input",
+                "dataType": "Float32"
+            },
+            "simulator": {
+                "type": "Sinewave",
+                "min": 100,
+                "max": 200,
+                "periodSeconds": 30
+            }
+        },
+        {
+            "key": "heating_active",
+            "type": "bool",
+            "initialValue": false,
+            "modbus": {
+                "address": 100,
+                "kind": "Coil",
+                "dataType": "Bool"
+            }
+        }
+    ]
+}

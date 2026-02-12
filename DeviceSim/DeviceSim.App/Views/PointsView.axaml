@@ -1,0 +1,104 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DeviceSim.App.ViewModels"
+             xmlns:conv="using:DeviceSim.App.Converters"
+             x:Class="DeviceSim.App.Views.PointsView"
+             x:DataType="vm:PointsViewModel">
+
+    <UserControl.Resources>
+        <conv:TypeVisibilityConverter x:Key="TypeToBoolConverter"/>
+    </UserControl.Resources>
+
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
+            <TextBlock Text="Points Monitor" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+            <Button Content="Refresh" Command="{Binding RefreshCommand}"/>
+        </StackPanel>
+
+        <DataGrid ItemsSource="{Binding Points}" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="Gray">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Device" Binding="{Binding DeviceName}" IsReadOnly="True" Width="150"/>
+                <DataGridTextColumn Header="Key" Binding="{Binding Key}" IsReadOnly="True" Width="150"/>
+                <DataGridTemplateColumn Header="Type" Width="100">
+                     <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                             <ComboBox ItemsSource="{Binding AvailableTypes}" SelectedItem="{Binding Type, Mode=TwoWay}" 
+                                       IsEnabled="{Binding IsEditingAllowed}"
+                                       HorizontalAlignment="Stretch" BorderThickness="0" Background="Transparent"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                
+                <DataGridTemplateColumn Header="Gen Type" Width="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                         <DataTemplate>
+                              <ComboBox ItemsSource="{Binding AvailableGenTypes}" SelectedItem="{Binding GenType, Mode=TwoWay}" 
+                                        IsEnabled="{Binding IsEditingAllowed}"
+                                        HorizontalAlignment="Stretch" BorderThickness="0" Background="Transparent"/>
+                         </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Min" Width="60">
+                     <DataGridTemplateColumn.CellTemplate>
+                          <DataTemplate>
+                               <TextBox Text="{Binding GenMin, Mode=TwoWay}" IsEnabled="{Binding IsEditingAllowed}" BorderThickness="0" Background="Transparent"/>
+                          </DataTemplate>
+                     </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Max" Width="60">
+                     <DataGridTemplateColumn.CellTemplate>
+                          <DataTemplate>
+                               <TextBox Text="{Binding GenMax, Mode=TwoWay}" IsEnabled="{Binding IsEditingAllowed}" BorderThickness="0" Background="Transparent"/>
+                          </DataTemplate>
+                     </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Period (s)" Width="80">
+                      <DataGridTemplateColumn.CellTemplate>
+                           <DataTemplate>
+                                <TextBox Text="{Binding GenPeriod, Mode=TwoWay}" IsEnabled="{Binding IsEditingAllowed}" BorderThickness="0" Background="Transparent"/>
+                           </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Value" Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                         <DataTemplate>
+                              <DockPanel>
+                                      <!-- Set/Commit Button -->
+                                      <Button DockPanel.Dock="Right" Content="Set" Command="{Binding SetValueCommand}" 
+                                              CommandParameter="{Binding #ValInput.Text}" Margin="5,0,0,0"
+                                              IsEnabled="{Binding IsEditingAllowed}"
+                                              IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='!bool', FallbackValue=True}"/>
+                                      
+                                      <Button DockPanel.Dock="Right" Content="Set" Command="{Binding SetValueCommand}" 
+                                              CommandParameter="{Binding $self.IsEffectivelyEnabled}" Margin="5,0,0,0"
+                                              IsEnabled="{Binding IsEditingAllowed}"
+                                              IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='bool', FallbackValue=False}"/>
+
+                                      <Panel>
+                                              <!-- Text Input for Numbers -->
+                                              <TextBox Name="ValInput" Text="{Binding Value, Mode=OneWay}" MinWidth="80"
+                                                       IsEnabled="{Binding IsEditingAllowed}"
+                                                       IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='!bool'}"/>
+                                              
+                                              <!-- CheckBox for Booleans -->
+                                              <CheckBox IsChecked="{Binding Value, Mode=OneWay}" 
+                                                        Command="{Binding SetValueCommand}"
+                                                        CommandParameter="{Binding $self.IsChecked}"
+                                                        IsEnabled="{Binding IsEditingAllowed}"
+                                                        IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='bool'}"/>
+                                      </Panel>
+                              </DockPanel>
+                         </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="100"/>
+                <DataGridTextColumn Header="Last Updated" Binding="{Binding LastUpdated}" Width="150"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

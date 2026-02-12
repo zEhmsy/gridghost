@@ -1,0 +1,77 @@
+{
+    "id": "mb_io_module_v1",
+    "name": "Modbus I/O Module",
+    "protocol": "Modbus",
+    "network": {
+        "port": 1502,
+        "bindIp": "127.0.0.1"
+    },
+    "points": [
+        {
+            "key": "di_01",
+            "type": "bool",
+            "initialValue": false,
+            "modbus": {
+                "address": 0,
+                "kind": "Discrete",
+                "dataType": "Bool"
+            }
+        },
+        {
+            "key": "di_02",
+            "type": "bool",
+            "initialValue": false,
+            "modbus": {
+                "address": 1,
+                "kind": "Discrete",
+                "dataType": "Bool"
+            }
+        },
+        {
+            "key": "do_01",
+            "type": "bool",
+            "initialValue": false,
+            "modbus": {
+                "address": 10,
+                "kind": "Coil",
+                "dataType": "Bool"
+            }
+        },
+        {
+            "key": "do_02",
+            "type": "bool",
+            "initialValue": false,
+            "modbus": {
+                "address": 11,
+                "kind": "Coil",
+                "dataType": "Bool"
+            }
+        },
+        {
+            "key": "ai_01",
+            "type": "float32",
+            "initialValue": 0.0,
+            "modbus": {
+                "address": 20,
+                "kind": "Input",
+                "dataType": "Float32"
+            },
+            "simulator": {
+                "type": "Sinewave",
+                "min": 0,
+                "max": 10,
+                "periodSeconds": 10
+            }
+        },
+        {
+            "key": "ao_01",
+            "type": "float32",
+            "initialValue": 0.0,
+            "modbus": {
+                "address": 30,
+                "kind": "Holding",
+                "dataType": "Float32"
+            }
+        }
+    ]
+}

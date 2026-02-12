@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DeviceSim.App.ViewModels"
+             x:Class="DeviceSim.App.Views.LogsView"
+             x:DataType="vm:LogsViewModel">
+
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
+            <TextBlock Text="System Logs" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+            <Button Content="Clear" Command="{Binding ClearCommand}"/>
+        </StackPanel>
+
+        <DataGrid ItemsSource="{Binding Logs}" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Time" Binding="{Binding Timestamp}" Width="150"/>
+                <DataGridTextColumn Header="Level" Binding="{Binding Level}" Width="80"/>
+                <DataGridTextColumn Header="Device" Binding="{Binding DeviceId}" Width="150"/>
+                <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

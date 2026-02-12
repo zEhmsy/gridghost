@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DeviceSim.Core\DeviceSim.Core.csproj" />
+  </ItemGroup>
+  
+  <!-- 
+    Placeholder for BACnet library. 
+    If a specific library like 'BACnet' or 'Yabe.BACnet' is decided, uncomment/add here.
+    For now we use built-in Sockets for the stub implementation.
+  -->
+  <!-- <PackageReference Include="BACnet" Version="1.0.0" /> -->
+
+</Project>

@@ -1,0 +1,89 @@
+{
+    "id": "mb_chiller_v1",
+    "name": "Modbus Chiller",
+    "protocol": "Modbus",
+    "network": {
+        "port": 1502,
+        "bindIp": "127.0.0.1"
+    },
+    "points": [
+        {
+            "key": "entering_water_temp",
+            "type": "float32",
+            "initialValue": 12.0,
+            "modbus": {
+                "address": 0,
+                "kind": "Input",
+                "dataType": "Float32"
+            },
+            "simulator": {
+                "type": "Sinewave",
+                "min": 11,
+                "max": 13,
+                "periodSeconds": 40
+            }
+        },
+        {
+            "key": "leaving_water_temp",
+            "type": "float32",
+            "initialValue": 7.0,
+            "modbus": {
+                "address": 2,
+                "kind": "Input",
+                "dataType": "Float32"
+            },
+            "simulator": {
+                "type": "Sinewave",
+                "min": 6.5,
+                "max": 7.5,
+                "periodSeconds": 30
+            }
+        },
+        {
+            "key": "setpoint",
+            "type": "float32",
+            "initialValue": 7.0,
+            "modbus": {
+                "address": 10,
+                "kind": "Holding",
+                "dataType": "Float32"
+            }
+        },
+        {
+            "key": "compressor_load",
+            "type": "float32",
+            "initialValue": 60.0,
+            "modbus": {
+                "address": 20,
+                "kind": "Input",
+                "dataType": "Float32"
+            },
+            "simulator": {
+                "type": "Sinewave",
+                "min": 40,
+                "max": 80,
+                "periodSeconds": 120
+            }
+        },
+        {
+            "key": "alarm_general",
+            "type": "bool",
+            "initialValue": false,
+            "modbus": {
+                "address": 100,
+                "kind": "Discrete",
+                "dataType": "Bool"
+            }
+        },
+        {
+            "key": "run_status",
+            "type": "bool",
+            "initialValue": true,
+            "modbus": {
+                "address": 101,
+                "kind": "Discrete",
+                "dataType": "Bool"
+            }
+        }
+    ]
+}

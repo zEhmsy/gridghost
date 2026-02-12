@@ -1,0 +1,2 @@
+Searching in: D:\CODE\Simulator M_B\DeviceSim\DeviceSim.App\bin\Debug\net8.0\Templates
+Found 7 files

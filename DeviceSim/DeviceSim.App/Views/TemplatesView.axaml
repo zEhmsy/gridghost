@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DeviceSim.App.ViewModels"
+             x:Class="DeviceSim.App.Views.TemplatesView"
+             x:DataType="vm:TemplatesViewModel">
+
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
+            <TextBlock Text="Templates" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+            <Button Content="Import JSON" Command="{Binding ImportCommand}"/>
+        </StackPanel>
+
+        <Grid ColumnDefinitions="*, 300">
+            <ListBox Grid.Column="0" ItemsSource="{Binding Templates}" SelectedItem="{Binding SelectedTemplate}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding Protocol}" FontStyle="Italic"/>
+                             <TextBlock Text="{Binding Network.Port, StringFormat='Port: {0}'}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <StackPanel Grid.Column="1" Margin="10" Spacing="10" IsVisible="{Binding SelectedTemplate, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <TextBlock Text="Actions" FontWeight="Bold"/>
+                <Button Content="Create Instance" Command="{Binding CreateInstanceCommand}" HorizontalAlignment="Stretch"/>
+                <Button Content="Delete Template" Command="{Binding DeleteCommand}" HorizontalAlignment="Stretch" Background="#ffcccc"/>
+                
+                <TextBlock Text="Preview" Margin="0,20,0,0"/>
+                <TextBox Text="{Binding SelectedTemplate.Id}" IsReadOnly="True"/>
+                <!-- We could show raw JSON preview here -->
+            </StackPanel>
+        </Grid>
+    </DockPanel>
+</UserControl>
