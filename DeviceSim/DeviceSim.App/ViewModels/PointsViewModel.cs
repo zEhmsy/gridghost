@@ -88,38 +88,57 @@ public partial class PointViewModel : ObservableObject
     public string DeviceName => _device.Name;
     public string Key => _def.Key;
 
-    public string[] AvailableTypes { get; } = new[] { "bool", "int16", "uint16", "int32", "uint32", "float", "float32" };
+    public string[] AvailableTypes { get; } = new[] { "bool", "int16", "uint16", "int32", "uint32", "float" };
+    public string[] AvailableNiagaraTypes { get; } = new[] { "Boolean", "Numeric", "Enum" };
     public string[] AvailableGenTypes { get; } = new[] { "static", "sine", "random", "ramp" };
 
-    [ObservableProperty]
-    private string _type;
-    
-    [ObservableProperty]
-    private object _value;
-    
-    [ObservableProperty]
-    private string _source; 
-    
-    [ObservableProperty]
-    private DateTime _lastUpdated;
+    [ObservableProperty] private string _type;
+    [ObservableProperty] private string _niagaraType;
+    [ObservableProperty] private object _value;
+    [ObservableProperty] private string? _displayValue;
+    [ObservableProperty] private string _source; 
+    [ObservableProperty] private DateTime _lastUpdated;
+    [ObservableProperty] private ushort _address;
+    [ObservableProperty] private double _scale;
+    [ObservableProperty] private int _startBit;
+    [ObservableProperty] private int _bitLength;
 
-    // Generator Config
-    [ObservableProperty]
-    private string _genType;
-    [ObservableProperty]
-    private double _genMin;
-    [ObservableProperty]
-    private double _genMax;
-    [ObservableProperty]
-    private double _genPeriod;
-
-    [ObservableProperty]
-    private bool _isEditingAllowed;
-
-    partial void OnGenTypeChanged(string value)
+    public string ModbusAddress => _def.Modbus?.Kind.ToLower() switch
     {
-        IsStatic = value == "static";
+        "coil" => $"0{(_def.Modbus.Address + 1):D4}",
+        "discrete" => $"1{(_def.Modbus.Address + 1):D4}",
+        "input" => $"3{(_def.Modbus.Address + 1):D4}",
+        "holding" => $"4{(_def.Modbus.Address + 1):D4}",
+        _ => "N/A"
+    };
+
+    public string FormattedNiagaraType => _type == "bool" ? "Boolean" : _niagaraType;
+
+    public string BitLengthString 
+    {
+        get 
+        {
+            if (_def.Modbus?.BitField != null)
+                return $"bit={_def.Modbus.BitField.StartBit}"; // Simple display for single bit
+            // If enum bitfield, maybe "start-end"? 
+            if (_def.Modbus?.Kind == "Holding" || _def.Modbus?.Kind == "Input")
+            {
+                 // Check if it's a bitfield config
+                 if (_def.Modbus.BitField != null)
+                    return $"{_def.Modbus.BitField.StartBit}:{_def.Modbus.BitField.BitLength}";
+            }
+            return "";
+        }
     }
+
+    [ObservableProperty] private string _genType;
+    [ObservableProperty] private double _genMin;
+    [ObservableProperty] private double _genMax;
+    [ObservableProperty] private double _genPeriod;
+    [ObservableProperty] private bool _isEditingAllowed;
+    [ObservableProperty] private bool _isStatic;
+
+    partial void OnGenTypeChanged(string value) => IsStatic = value == "static";
 
     public PointViewModel(DeviceInstance device, PointDefinition def, PointValue initial, IPointStore store, DeviceManager deviceManager)
     {
@@ -129,11 +148,23 @@ public partial class PointViewModel : ObservableObject
         _deviceManager = deviceManager;
         
         _type = def.Type;
+        _niagaraType = def.NiagaraType;
         _value = initial.Value;
+        _displayValue = initial.DisplayValue;
         _source = initial.Source.ToString();
         _lastUpdated = initial.LastUpdated;
 
-        // Init generator props
+        if (def.Modbus != null)
+        {
+            _address = def.Modbus.Address;
+            _scale = def.Modbus.Scale;
+            if (def.Modbus.BitField != null)
+            {
+                _startBit = def.Modbus.BitField.StartBit;
+                _bitLength = def.Modbus.BitField.BitLength;
+            }
+        }
+
         if (def.Generator == null) def.Generator = new GeneratorConfig();
         _genType = def.Generator.Type;
         _genMin = def.Generator.Min;
@@ -144,12 +175,10 @@ public partial class PointViewModel : ObservableObject
         _isEditingAllowed = _device.Status != DeviceStatus.Running;
     }
 
-    [ObservableProperty]
-    private bool _isStatic;
-
     public void Update(PointValue val)
     {
         if (!object.Equals(Value, val.Value)) Value = val.Value;
+        DisplayValue = val.DisplayValue;
         Source = val.Source.ToString();
         LastUpdated = val.LastUpdated;
     }
@@ -181,7 +210,12 @@ public partial class PointViewModel : ObservableObject
                 if (double.TryParse(str, out double d)) val = d;
                 else if (bool.TryParse(str, out bool b)) val = b;
             }
-             _store.SetValue(DeviceId, Key, val, PointSource.Manual);
+            
+            // Generate display value string to prevent UI blanking
+            string disp = val.ToString() ?? "";
+            if (val is double dv) disp = dv.ToString("F2");
+            
+             _store.SetValue(DeviceId, Key, val, PointSource.Manual, disp);
         }
         
         await Task.CompletedTask;

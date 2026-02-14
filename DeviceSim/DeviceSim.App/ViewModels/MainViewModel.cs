@@ -7,10 +7,11 @@ public partial class MainViewModel : ViewModelBase
 {
     private ViewModelBase _currentView;
 
-    public DevicesViewModel DevicesView { get; }
+    public ViewModelBase DevicesView { get; }
     public PointsViewModel PointsView { get; }
-    public TemplatesViewModel TemplatesView { get; }
-    public LogsViewModel LogsView { get; }
+    public PointMapViewModel PointMapView { get; }
+    public ViewModelBase TemplatesView { get; }
+    public ViewModelBase LogsView { get; }
 
     public ViewModelBase CurrentView
     {
@@ -30,6 +31,9 @@ public partial class MainViewModel : ViewModelBase
         PointsView = pointsView;
         TemplatesView = templatesView;
         LogsView = logsView;
+        
+        // Create the wrapper VM
+        PointMapView = new PointMapViewModel(pointsView);
 
         _currentView = DevicesView; // Default
 
@@ -42,6 +46,7 @@ public partial class MainViewModel : ViewModelBase
         {
             case "Devices": CurrentView = DevicesView; break;
             case "Points": CurrentView = PointsView; break;
+            case "PointMap": CurrentView = PointMapView; break;
             case "Templates": CurrentView = TemplatesView; break;
             case "Logs": CurrentView = LogsView; break;
         }

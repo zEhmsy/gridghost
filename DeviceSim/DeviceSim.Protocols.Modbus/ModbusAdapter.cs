@@ -30,7 +30,9 @@ public class ModbusAdapter : IProtocolAdapter
             var linkedStore = new LinkedDataStore(pointStore, instance);
             
             var slave = factory.CreateSlave(1, linkedStore);
-            slaveNetwork.AddSlave(slave);
+            // Wrap slave to handle exceptions (return Code 2 for Illegal Address)
+            var wrappedSlave = new ModbusSlaveWrapper(slave);
+            slaveNetwork.AddSlave(wrappedSlave);
 
             // No need for sync loop anymore!
             

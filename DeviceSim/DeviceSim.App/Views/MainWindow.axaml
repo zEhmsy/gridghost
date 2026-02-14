@@ -27,6 +27,10 @@
                             HorizontalAlignment="Stretch" Content="Points" 
                             Height="40" VerticalContentAlignment="Center"
                             Background="Transparent" Foreground="#ccc" BorderThickness="0"/>
+                    <Button Command="{Binding NavigateCommand}" CommandParameter="PointMap" 
+                            HorizontalAlignment="Stretch" Content="Point Map (Niagara)" 
+                            Height="40" VerticalContentAlignment="Center"
+                            Background="Transparent" Foreground="#44FF44" FontWeight="Bold" BorderThickness="0"/>
                     <Button Command="{Binding NavigateCommand}" CommandParameter="Templates" 
                             HorizontalAlignment="Stretch" Content="Templates" 
                             Height="40" VerticalContentAlignment="Center"

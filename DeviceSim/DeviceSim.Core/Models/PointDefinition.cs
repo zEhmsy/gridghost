@@ -5,8 +5,13 @@ namespace DeviceSim.Core.Models;
 public class PointDefinition
 {
     public string Key { get; set; } = string.Empty;
-    public string Type { get; set; } = "float"; // bool, int16, uint16, int32, uint32, float, float32
+    public string Name { get; set; } = string.Empty;
+    public string Type { get; set; } = "float"; // bool, int16, uint16, int32, uint32, float
     
+    // Niagara-specific metadata
+    public string NiagaraType { get; set; } = "Numeric"; // Boolean, Numeric, Enum
+    public string? Unit { get; set; }
+
     // Generator config (optional)
     public GeneratorConfig? Generator { get; set; }
 
@@ -29,6 +34,20 @@ public class ModbusPointConfig
     public string Kind { get; set; } = "holding"; // holding, input, coil, discrete
     public ushort Address { get; set; }
     public double Scale { get; set; } = 1.0;
+    public BitFieldConfig? BitField { get; set; }
+    public List<EnumMapEntry>? EnumMapping { get; set; }
+}
+
+public class BitFieldConfig
+{
+    public int StartBit { get; set; }
+    public int BitLength { get; set; } = 1;
+}
+
+public class EnumMapEntry
+{
+    public int Value { get; set; }
+    public string Label { get; set; } = string.Empty;
 }
 
 public class BacnetPointConfig

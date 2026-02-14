@@ -41,16 +41,7 @@ public partial class App : Application
             };
         }
 
-        // Start scheduler automatically
-        try 
-        {
-            var scheduler = Services.GetRequiredService<SimulationScheduler>();
-            scheduler.Start();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"FATAL: Failed to start scheduler: {ex}");
-        }
+        // Global scheduler start removed. Simulation is now per-device via DeviceManager.
 
         base.OnFrameworkInitializationCompleted();
     }

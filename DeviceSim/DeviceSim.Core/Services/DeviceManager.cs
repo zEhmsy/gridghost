@@ -13,17 +13,20 @@ public class DeviceManager
     // deviceId -> Instance
     private readonly ConcurrentDictionary<string, DeviceInstance> _instances = new();
     
+    private readonly SimulationScheduler _scheduler;
+
     // deviceId -> (Cts, Task)
     private readonly ConcurrentDictionary<string, (CancellationTokenSource Cts, Task Task)> _runningDevices = new();
 
     public event Action<DeviceInstance>? OnDeviceUpdated;
     public event Action<string>? OnDeviceRemoved;
 
-    public DeviceManager(IEnumerable<IProtocolAdapter> adapters, IPointStore pointStore, ILogSink logger)
+    public DeviceManager(IEnumerable<IProtocolAdapter> adapters, IPointStore pointStore, ILogSink logger, SimulationScheduler scheduler)
     {
         _adapters = adapters;
         _pointStore = pointStore;
         _logger = logger;
+        _scheduler = scheduler;
     }
 
     public void AddInstance(DeviceInstance instance)
@@ -64,17 +67,19 @@ public class DeviceManager
         instance.LastError = null;
         OnDeviceUpdated?.Invoke(instance);
 
+        _scheduler.StartDeviceSimulation(instance);
+
         var task = Task.Run(async () => 
         {
             try
             {
-                _logger.Log("Info", "Starting device...", id);
+                _logger.Log("Info", "Starting device protocol adapter...", id);
                 await adapter.StartAsync(instance, _pointStore, _logger, cts.Token);
             }
             catch (OperationCanceledException) { }
             catch (Exception ex)
             {
-                _logger.LogException(ex, "Device crashed", id);
+                _logger.LogException(ex, "Device adapter crashed", id);
                 instance.Status = DeviceStatus.Error;
                 instance.LastError = ex.Message;
                 OnDeviceUpdated?.Invoke(instance);
@@ -92,21 +97,24 @@ public class DeviceManager
             var instance = _instances[id];
             _logger.Log("Info", "Stopping device...", id);
             
+            // 1. Stop Simulation
+            await _scheduler.StopDeviceSimulationAsync(id);
+
+            // 2. Cancel adapter CT
             running.Cts.Cancel();
             try
             {
-                // We also need to call StopAsync on adapter if it has cleanup logic that doesn't rely solely on CT
                 var adapter = _adapters.FirstOrDefault(a => a.Protocol == instance.Protocol);
                 if (adapter != null)
                 {
                     await adapter.StopAsync(instance, CancellationToken.None);
                 }
                 
-                await running.Task.WaitAsync(TimeSpan.FromSeconds(2));
+                await running.Task.WaitAsync(TimeSpan.FromSeconds(3));
             }
             catch (Exception ex)
             {
-                 _logger.Log("Error", $"Error stopping device: {ex.Message}", id);
+                 _logger.Log("Error", $"Error stopping device adapter: {ex.Message}", id);
             }
             finally
             {

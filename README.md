@@ -20,6 +20,10 @@ GridGhost is a lightweight, high-performance Modbus (and soon BACnet) device sim
 ## Features
 
 - **Multi-Protocol Support**: Modbus TCP (Fully implemented), BACnet (Roadmap).
+- **Niagara Integration Support**: 
+  - **16-bit Scaled Registers**: Automatic conversion between simulation floats and Modbus Int16/UInt16 using configurable scale/offset.
+  - **Packed Booleans**: Define multiple boolean points within a single Modbus register (bit-wise mapping).
+  - **Enum Bitfields**: Map integer simulation values to specific bit-ranges in a register for high-density Niagara integration.
 - **Direct Store Integration**: No polling loops. Modbus registers map directly to the internal simulation store for real-time reactivity.
 - **Dynamic Data Generators**:
   - **Sine Wave**: Perfect for temperature and CO2 simulation.
@@ -27,8 +31,36 @@ GridGhost is a lightweight, high-performance Modbus (and soon BACnet) device sim
   - **Random**: For simulating sensor noise.
   - **Static**: For manual command/status testing.
 - **Template System**: Quickly create devices from JSON templates (Energy Meters, AHUs, VAVs, etc.).
+- **Point Map UI**: Dedicated view for Modbus mapping with Niagara-style addressing (e.g., 40001, 30001).
 - **Editable Device Config**: Change ports and point types on the fly (requires stop/start for stability).
 - **Modern UI**: Dark-themed, responsive Avalonia UI.
+
+## Niagara Integration Guide
+
+GridGhost is optimized for usage with **Tridium Niagara**. It supports the following advanced features:
+
+### 1. 16-bit Scaled Numerics
+Instead of using 32-bit floats (which take two registers), you can use `int16` or `uint16` with a `scale`.
+*Example*: A temperature of `25.5` with a scale of `10.0` will be written as `255` in the Modbus register.
+
+### 2. Packed Booleans (Bitfields)
+You can save Modbus bandwidth and memory by packing up to 16 booleans into a single holding or input register.
+```json
+"modbus": {
+  "address": 10,
+  "kind": "Holding",
+  "bitField": { "startBit": 0, "bitLength": 1 }
+}
+```
+
+### 3. Enum Mappings
+Simulate Niagara enums (Ordinal points) by mapping values to labels.
+```json
+"enumMapping": [
+  { "value": 0, "label": "Off" },
+  { "value": 1, "label": "Heating" }
+]
+```
 
 ## Tech Stack
 

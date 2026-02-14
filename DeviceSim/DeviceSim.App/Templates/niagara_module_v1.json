@@ -1,0 +1,137 @@
+{
+    "id": "niagara_module_v1",
+    "name": "Niagara Optimized Module",
+    "protocol": "Modbus",
+    "network": {
+        "port": 502,
+        "bindIp": "127.0.0.1"
+    },
+    "points": [
+        {
+            "key": "temp_scaled",
+            "name": "Temperature Sensor",
+            "type": "int16",
+            "niagaraType": "Numeric",
+            "unit": "°C",
+            "modbus": {
+                "address": 0,
+                "kind": "Input",
+                "scale": 10.0
+            },
+            "generator": {
+                "type": "sine",
+                "min": 18.0,
+                "max": 25.0,
+                "periodSeconds": 60
+            }
+        },
+        {
+            "key": "co2_scaled",
+            "name": "CO2 Sensor",
+            "type": "uint16",
+            "niagaraType": "Numeric",
+            "unit": "ppm",
+            "modbus": {
+                "address": 1,
+                "kind": "Input",
+                "scale": 1.0
+            },
+            "generator": {
+                "type": "ramp",
+                "min": 400,
+                "max": 1000,
+                "periodSeconds": 120
+            }
+        },
+        {
+            "key": "setpoint",
+            "name": "Temperature Setpoint",
+            "type": "int16",
+            "niagaraType": "Numeric",
+            "unit": "°C",
+            "modbus": {
+                "address": 0,
+                "kind": "Holding",
+                "scale": 10.0
+            },
+            "generator": {
+                "type": "static"
+            }
+        },
+        {
+            "key": "packed_bool_1",
+            "name": "Status Bit 0",
+            "type": "bool",
+            "niagaraType": "Boolean",
+            "modbus": {
+                "address": 10,
+                "kind": "Holding",
+                "bitField": {
+                    "startBit": 0,
+                    "bitLength": 1
+                }
+            }
+        },
+        {
+            "key": "packed_bool_2",
+            "name": "Status Bit 1",
+            "type": "bool",
+            "niagaraType": "Boolean",
+            "modbus": {
+                "address": 10,
+                "kind": "Holding",
+                "bitField": {
+                    "startBit": 1,
+                    "bitLength": 1
+                }
+            }
+        },
+        {
+            "key": "enum_status",
+            "name": "Operating Mode",
+            "type": "uint16",
+            "niagaraType": "Enum",
+            "modbus": {
+                "address": 11,
+                "kind": "Holding",
+                "bitField": {
+                    "startBit": 0,
+                    "bitLength": 3
+                },
+                "enumMapping": [
+                    {
+                        "value": 0,
+                        "label": "Off"
+                    },
+                    {
+                        "value": 1,
+                        "label": "Heating"
+                    },
+                    {
+                        "value": 2,
+                        "label": "Cooling"
+                    },
+                    {
+                        "value": 3,
+                        "label": "Auto"
+                    }
+                ]
+            },
+            "generator": {
+                "type": "random",
+                "min": 0,
+                "max": 3
+            }
+        },
+        {
+            "key": "coil_1",
+            "name": "Fan Relay",
+            "type": "bool",
+            "niagaraType": "Boolean",
+            "modbus": {
+                "address": 0,
+                "kind": "Coil"
+            }
+        }
+    ]
+}

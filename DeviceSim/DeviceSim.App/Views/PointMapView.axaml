@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:DeviceSim.App.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="DeviceSim.App.Views.PointMapView"
+             x:DataType="vm:PointMapViewModel">
+    <DockPanel Margin="20">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
+            <TextBlock Text="Modbus Point Map" FontSize="24" FontWeight="Bold"/>
+            <Button Content="Refresh" Command="{Binding RefreshCommand}" />
+        </StackPanel>
+        
+        <DataGrid ItemsSource="{Binding Points}" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="Gray">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Device" Binding="{Binding DeviceName}" Width="150" />
+                <DataGridTextColumn Header="Point Key" Binding="{Binding Key}" Width="150" />
+                <DataGridTextColumn Header="Modbus Address" Binding="{Binding ModbusAddress}" Foreground="Cyan" FontWeight="Bold" Width="120" />
+                <DataGridTextColumn Header="Niagara Type" Binding="{Binding FormattedNiagaraType}" Width="100" />
+                <DataGridTextColumn Header="Data Type" Binding="{Binding Type}" Width="100" />
+                <DataGridTextColumn Header="Scale" Binding="{Binding Scale}" Width="60" />
+                <DataGridTextColumn Header="Bit/Length" Binding="{Binding BitLengthString}" Width="80" />
+                <DataGridTextColumn Header="Value" Binding="{Binding DisplayValue}" Width="*" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

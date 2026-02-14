@@ -26,17 +26,18 @@ public class PointStore : IPointStore
         _store.TryRemove(deviceId, out _);
     }
 
-    public void SetValue(string deviceId, string pointKey, object value, PointSource source)
+    public void SetValue(string deviceId, string pointKey, object value, PointSource source, string? displayValue = null)
     {
         if (_store.TryGetValue(deviceId, out var devicePoints))
         {
             devicePoints.AddOrUpdate(pointKey, 
-                _ => new PointValue { Value = value, Source = source, LastUpdated = DateTime.UtcNow },
+                _ => new PointValue { Value = value, Source = source, LastUpdated = DateTime.UtcNow, DisplayValue = displayValue },
                 (_, existing) => 
                 {
                     existing.Value = value;
                     existing.Source = source;
                     existing.LastUpdated = DateTime.UtcNow;
+                    existing.DisplayValue = displayValue;
                     return existing;
                 });
 
