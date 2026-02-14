@@ -4,7 +4,6 @@ using NModbus;
 using NModbus.Data;
 using System.Net;
 using System.Net.Sockets;
-using NModbus.Data;
 
 namespace DeviceSim.Protocols.Modbus;
 

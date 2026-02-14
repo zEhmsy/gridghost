@@ -19,6 +19,23 @@ public partial class DeviceInstanceViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _enabled;
+
+    partial void OnEnabledChanged(bool value)
+    {
+        // Fire and forget async toggle
+        // We use Dispatcher or Task.Run to avoid blocking the UI thread if it's synchronous
+        // But the Manager methods are async.
+        // We need to ensure we don't re-trigger if the value was set FROM the model update.
+        
+        if (value && _instance.Status != DeviceStatus.Running)
+        {
+            _ = _deviceManager.StartDeviceAsync(Id);
+        }
+        else if (!value && _instance.Status == DeviceStatus.Running)
+        {
+            _ = _deviceManager.StopDeviceAsync(Id);
+        }
+    }
     
     [ObservableProperty]
     private string? _lastError;

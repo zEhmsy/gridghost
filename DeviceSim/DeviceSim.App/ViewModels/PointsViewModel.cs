@@ -112,7 +112,7 @@ public partial class PointViewModel : ObservableObject
         _ => "N/A"
     };
 
-    public string FormattedNiagaraType => _type == "bool" ? "Boolean" : _niagaraType;
+    public string FormattedNiagaraType => Type == "bool" ? "Boolean" : NiagaraType;
 
     public string BitLengthString 
     {
@@ -137,6 +137,27 @@ public partial class PointViewModel : ObservableObject
     [ObservableProperty] private double _genPeriod;
     [ObservableProperty] private bool _isEditingAllowed;
     [ObservableProperty] private bool _isStatic;
+
+    // Derived property for UI to avoid blanking when Store sends empty value
+    public string EffectiveDisplayValue 
+    {
+        get
+        {
+            if (Value == null) return "-";
+            
+            if (Value is bool b) return b ? "True" : "False";
+            
+            if (Value is double d) return d.ToString("F2");
+            if (Value is float f) return f.ToString("F2");
+            
+            return Value.ToString() ?? "";
+        }
+    }
+
+    partial void OnValueChanged(object value)
+    {
+        OnPropertyChanged(nameof(EffectiveDisplayValue));
+    }
 
     partial void OnGenTypeChanged(string value) => IsStatic = value == "static";
 

@@ -21,6 +21,7 @@ public class ModbusAdapter : IProtocolAdapter
         try
         {
             listener.Start();
+            _listeners[instance.Id] = listener; // Track listener for StopAsync
             log.Log("Info", $"Modbus TCP Server started on {ip}:{port}", instance.Id);
 
             var factory = new ModbusFactory();

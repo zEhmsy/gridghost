@@ -21,7 +21,7 @@
                 <DataGridTextColumn Header="Data Type" Binding="{Binding Type}" Width="100" />
                 <DataGridTextColumn Header="Scale" Binding="{Binding Scale}" Width="60" />
                 <DataGridTextColumn Header="Bit/Length" Binding="{Binding BitLengthString}" Width="80" />
-                <DataGridTextColumn Header="Value" Binding="{Binding DisplayValue}" Width="*" />
+                <DataGridTextColumn Header="Value" Binding="{Binding EffectiveDisplayValue}" Width="*" />
             </DataGrid.Columns>
         </DataGrid>
     </DockPanel>
