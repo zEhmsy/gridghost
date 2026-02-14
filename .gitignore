@@ -10,6 +10,7 @@ Thumbs.db
 # GridGhost Installers
 *.exe
 !DeviceSim.App/Assets/Icons/*.ico
+InstallerOutput
 
 # Debug/Temp
 *.pdb
