@@ -1,0 +1,13 @@
+{
+  "device_id": 1,
+  "points": [
+    { "name": "supply_temp", "kind": "input",   "address": 30002, "dataType": "int16",  "scale": 1.0, "offset": 0.0, "unit": "degC" },
+    { "name": "return_temp", "kind": "input",   "address": 30004, "dataType": "int16",  "scale": 1.0, "offset": 0.0, "unit": "degC" },
+
+    { "name": "supply_fan_speed", "kind": "holding", "address": 40012, "dataType": "uint16", "scale": 1.0, "offset": 0.0, "unit": "pct" },
+    { "name": "return_fan_speed", "kind": "holding", "address": 40014, "dataType": "uint16", "scale": 1.0, "offset": 0.0, "unit": "pct" },
+
+    { "name": "filter_alarm", "kind": "discrete", "address": 10101 },
+    { "name": "system_enable", "kind": "coil",    "address": 102 }
+  ]
+}

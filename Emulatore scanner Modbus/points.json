@@ -1,0 +1,41 @@
+{
+  "device_id": 1,
+  "points": [
+    {
+      "name": "SupplyTemp",
+      "kind": "input",
+      "address": 30002,
+      "dataType": "int16",
+      "scale": 0.1,
+      "offset": 0.0,
+      "unit": "degC"
+    },
+    {
+      "name": "CO2",
+      "kind": "input",
+      "address": 30010,
+      "dataType": "uint16",
+      "scale": 1.0,
+      "offset": 0.0,
+      "unit": "ppm"
+    },
+    {
+      "name": "EnableCmd",
+      "kind": "coil",
+      "address": 1
+    },
+    {
+      "name": "AlarmPacked",
+      "kind": "holding",
+      "address": 40020,
+      "bit": 3
+    },
+    {
+      "name": "FanMode",
+      "kind": "holding",
+      "address": 40021,
+      "bitfield": { "start": 4, "len": 3 },
+      "enum": { "0": "off", "1": "low", "2": "med", "3": "high" }
+    }
+  ]
+}

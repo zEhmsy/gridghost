@@ -24,6 +24,7 @@ GridGhost is a lightweight, high-performance Modbus (and soon BACnet) device sim
   - **16-bit Scaled Registers**: Automatic conversion between simulation floats and Modbus Int16/UInt16 using configurable scale/offset.
   - **Packed Booleans**: Define multiple boolean points within a single Modbus register (bit-wise mapping).
   - **Enum Bitfields**: Map integer simulation values to specific bit-ranges in a register for high-density Niagara integration.
+  - **Standardized Exception Codes**: Correctly returns **Exception Code 2 (Illegal Data Address)** for unmapped registers, ensuring reliable scan synchronization.
 - **Direct Store Integration**: No polling loops. Modbus registers map directly to the internal simulation store for real-time reactivity.
 - **Dynamic Data Generators**:
   - **Sine Wave**: Perfect for temperature and CO2 simulation.
@@ -61,6 +62,9 @@ Simulate Niagara enums (Ordinal points) by mapping values to labels.
   { "value": 1, "label": "Heating" }
 ]
 ```
+
+### 4. Reliable Scanning (Exception Code 2)
+GridGhost implements a proactive validation layer that intercepts Modbus requests for unmapped registers. Instead of a generic server failure (Code 4), it returns **Illegal Data Address (Code 2)**, allowing Niagara and other supervisors to accurately map available data points without timing out or failing the device.
 
 ## Tech Stack
 
@@ -100,6 +104,15 @@ dotnet run --project DeviceSim/DeviceSim.App/DeviceSim.App.csproj
 To generate a single-file executable for Windows:
 ```powershell
 dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+```
+
+### Creating the Installer
+To build the Windows installer (requires [Inno Setup 6](https://jrsoftware.org/isinfo.php)):
+1. Run `build.ps1` to publish the app.
+2. Compile `setup.iss` with ISCC.exe.
+```powershell
+./build.ps1
+& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup.iss
 ```
 
 ## License
