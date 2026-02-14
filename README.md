@@ -12,6 +12,9 @@
 
 GridGhost is a lightweight, high-performance Modbus (and soon BACnet) device simulator designed for BMS (Building Management System) testing, commissioning, and development. It allows engineers to simulate complex field devices with dynamic data generators without physical hardware.
 
+> [!WARNING]
+> **BETA VERSION**: This project is currently in **Beta**. While core Modbus features are stable, you may encounter bugs. Contributions and feedback are welcome!
+
 > [!IMPORTANT]
 > **Platform Support**: The current release provides a native **Windows Installer**. However, since GridGhost is built on .NET 8 and Avalonia UI, support for **Linux** and **macOS** is in the roadmap and technically compatible.
 
