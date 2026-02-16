@@ -15,7 +15,8 @@
                 "address": 0,
                 "kind": "discrete",
                 "dataType": "Bool"
-            }
+            },
+            "access": "Read"
         },
         {
             "key": "di_02",

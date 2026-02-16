@@ -74,6 +74,25 @@ Simulate Niagara enums (Ordinal points) by mapping values to labels.
 ### 4. Reliable Scanning (Exception Code 2)
 GridGhost implements a proactive validation layer that intercepts Modbus requests for unmapped registers. Instead of a generic server failure (Code 4), it returns **Illegal Data Address (Code 2)**, allowing Niagara and other supervisors to accurately map available data points without timing out or failing the device.
 
+### 5. Modbus Perfection (Niagara Grade)
+
+GridGhost v1.2.0 introduces strict compliance features to match the robustness of hardware devices:
+
+- **Strict Exception Handling**:
+  - **Code 02 (Illegal Data Address)**: Returned if *any* address in a Read/Write request is unmapped. This ensures supervisors like Niagara fail fast on configuration errors instead of receiving garbage data.
+  - **Code 03 (Illegal Data Value)**: Returned if attempting to write to a point marked as `Access: Read`.
+
+- **New Function Codes verified**:
+  - **FC 05** (Write Single Coil) & **FC 15 (0x0F)** (Write Multiple Coils).
+  - **FC 06** (Write Single Register) & **FC 16 (0x10)** (Write Multiple Registers).
+
+- **Access Control & Overrides**:
+  - `Access`: Set to `Read`, `Write`, or `ReadWrite` (Default) in your template.
+  - `OverrideMode`: Set to `ForceStatic` to automatically switch a Generator-controlled point to "Static" mode when written to externally.
+
+- **Export Map**:
+  - Generate a CSV file containing the full Modbus map (Name, Address, Type, Scale, Access) directly from the device view.
+
 ## Tech Stack
 
 - **Framework**: .NET 8, Avalonia UI

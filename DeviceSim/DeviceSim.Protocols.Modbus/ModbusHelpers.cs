@@ -131,35 +131,30 @@ public class ModbusPointSource<T> : IPointSource<T>
     public T[] ReadPoints(ushort startAddress, ushort numberOfPoints)
     {
         var result = new T[numberOfPoints];
-        // If ushort (registers), we need to check if multiple points share the same address
         for (int i = 0; i < numberOfPoints; i++)
         {
             ushort addr = (ushort)(startAddress + i);
             
-            // Find ALL points mapped to this address
             if (!_mapping.TryGetValue(addr, out var pointsAtAddr))
             {
                 if (typeof(T) == typeof(bool))
                 {
-                    // Allow gaps for Coils/Discretes to support block reads (Niagara scans)
                     result[i] = (T)(object)false;
                     continue;
                 }
                 else
                 {
-                    // Strict validation for Registers: if address is not mapped, return Exception
                     throw new IllegalDataAddressException();
                 }
             }
 
             if (typeof(T) == typeof(bool))
             {
-                // For Coils/Discretes, we expect a single boolean point
                 if (pointsAtAddr.Any())
                 {
                    var pt = _store.GetValue(_deviceId, pointsAtAddr[0].Key);
-                   // Robust conversion: handle 1.0, "true", etc.
-                   result[i] = (T)(object)Convert.ToBoolean(pt.Value ?? false);
+                   bool val = Convert.ToBoolean(pt.Value ?? false);
+                   result[i] = (T)(object)val;
                 }
                 else
                 {
@@ -184,7 +179,7 @@ public class ModbusPointSource<T> : IPointSource<T>
                     else
                     {
                         finalReg = (ushort)Math.Round(d * scale);
-                        break; // Conventional registers take precedence or should be unique
+                        break; 
                     }
                 }
                 result[i] = (T)(object)finalReg;
@@ -202,8 +197,18 @@ public class ModbusPointSource<T> : IPointSource<T>
             {
                 foreach (var def in pointsAtAddr)
                 {
+                    if (def.Access == AccessMode.Read)
+                    {
+                        throw new IllegalDataValueException();
+                    }
+
                     var val = ConvertFromModbus(points[i], def);
                     _store.SetValue(_deviceId, def.Key, val, _writeSource);
+
+                    if (def.OverrideMode == ExternalWriteOverrideMode.ForceStatic && def.Generator != null)
+                    {
+                         def.Generator.Type = "static";
+                    }
                 }
             }
             else

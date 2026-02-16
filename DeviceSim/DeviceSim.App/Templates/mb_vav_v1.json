@@ -16,6 +16,7 @@
                 "kind": "input",
                 "dataType": "int16"
             },
+            "access": "Read",
             "generator": {
                 "type": "sine",
                 "min": 21,
@@ -31,7 +32,9 @@
                 "address": 10,
                 "kind": "holding",
                 "dataType": "int16"
-            }
+            },
+            "access": "ReadWrite",
+            "overrideMode": "ForceStatic"
         },
         {
             "key": "damper_position",

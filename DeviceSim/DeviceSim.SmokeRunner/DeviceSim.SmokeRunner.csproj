@@ -11,4 +11,9 @@
     <PackageReference Include="NModbus" Version="3.0.81" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DeviceSim.Core\DeviceSim.Core.csproj" />
+    <ProjectReference Include="..\DeviceSim.Protocols.Modbus\DeviceSim.Protocols.Modbus.csproj" />
+  </ItemGroup>
+
 </Project>

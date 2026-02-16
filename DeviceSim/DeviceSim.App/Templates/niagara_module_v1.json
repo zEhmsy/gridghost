@@ -18,6 +18,7 @@
                 "kind": "Input",
                 "scale": 10.0
             },
+            "access": "Read",
             "generator": {
                 "type": "sine",
                 "min": 18.0,

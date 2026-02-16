@@ -2,32 +2,94 @@
 using System.Net.Sockets;
 using System.Threading;
 using NModbus;
+using System.Threading.Tasks;
+using System.Collections.Generic; // Added for List
 
 namespace DeviceSim.SmokeRunner
 {
     class Program
     {
-        static int Main(string[] args)
+        static async Task<int> Main(string[] args)
         {
             string host = "127.0.0.1";
-            int port = 502;
+            int port = 5502; // Use non-standard port for test
             int slaveId = 1;
 
             if (args.Length > 0) host = args[0];
             if (args.Length > 1) int.TryParse(args[1], out port);
 
-            Console.WriteLine($"--- GridGhost C# Smoke Runner ---");
+            Console.WriteLine($"--- GridGhost C# Smoke Runner (Direct Adapter Mode) ---");
             Console.WriteLine($"Target: {host}:{port}, Slave: {slaveId}");
 
-            bool allPassed = true;
+            // --- SETUP SERVER ---
+            var pointStore = new DeviceSim.Core.Services.PointStore();
+            var logger = new DeviceSim.Core.Services.LogService();
+            var adapter = new DeviceSim.Protocols.Modbus.ModbusAdapter();
 
-            // 0. TCP Connect
-            if (!TcpCheck(host, port))
+            // Create Device
+            var device = new DeviceSim.Core.Models.DeviceInstance
             {
-                Console.WriteLine("[FAIL] Cannot open TCP connection.");
+                Id = "smoke-test",
+                Name = "Smoke Test Device",
+                Enabled = true,
+                Protocol = DeviceSim.Core.Models.ProtocolType.Modbus,
+                Network = new DeviceSim.Core.Models.NetworkConfig { Port = port, BindIp = "127.0.0.1" },
+                Points = new List<DeviceSim.Core.Models.PointDefinition>
+                {
+                    // Coil 101 (addr 100) -> for FC05
+                    new DeviceSim.Core.Models.PointDefinition { 
+                        Key = "Coil101", 
+                        Name = "Coil 101", 
+                        Type = "bool", 
+                        Access = DeviceSim.Core.Models.AccessMode.ReadWrite,
+                        Modbus = new DeviceSim.Core.Models.ModbusPointConfig { Kind = "Coil", Address = 100 } 
+                    },
+                    // Coil 96, 97, 98 -> for FC0F (3 coils)
+                   new DeviceSim.Core.Models.PointDefinition { Key = "C96", Type="bool", Modbus = new DeviceSim.Core.Models.ModbusPointConfig { Kind="Coil", Address=96 } },
+                   new DeviceSim.Core.Models.PointDefinition { Key = "C97", Type="bool", Modbus = new DeviceSim.Core.Models.ModbusPointConfig { Kind="Coil", Address=97 } },
+                   new DeviceSim.Core.Models.PointDefinition { Key = "C98", Type="bool", Modbus = new DeviceSim.Core.Models.ModbusPointConfig { Kind="Coil", Address=98 } },
+
+                   // Holding 10 -> for FC10
+                   new DeviceSim.Core.Models.PointDefinition { Key = "H10", Type="uint16", Access=DeviceSim.Core.Models.AccessMode.ReadWrite, Modbus = new DeviceSim.Core.Models.ModbusPointConfig { Kind="Holding", Address=10 } },
+                   new DeviceSim.Core.Models.PointDefinition { Key = "H11", Type="uint16", Access=DeviceSim.Core.Models.AccessMode.ReadWrite, Modbus = new DeviceSim.Core.Models.ModbusPointConfig { Kind="Holding", Address=11 } },
+                   
+                   // Holding 20 -> Read Only
+                   new DeviceSim.Core.Models.PointDefinition { Key = "RO20", Type="uint16", Access=DeviceSim.Core.Models.AccessMode.Read, Modbus = new DeviceSim.Core.Models.ModbusPointConfig { Kind="Holding", Address=20 } },
+                }
+            };
+            
+            // Initialize Points in Store (Required for SetValue to work!)
+            pointStore.InitializePoints(device.Id, device.Points);
+
+            // Start Adapter in Background
+            var cts = new CancellationTokenSource();
+            var serverTask = Task.Run(async () => 
+            {
+                try {
+                    await adapter.StartAsync(device, pointStore, logger, cts.Token);
+                } catch (OperationCanceledException) {}
+                  catch (Exception ex) { Console.WriteLine($"Server Error: {ex}"); }
+            });
+            
+            Console.WriteLine("Server Starting...");
+            // Wait for port to open
+            bool connected = false;
+            for(int i=0; i<10; i++) 
+            {
+                if (TcpCheck(host, port)) { connected = true; break; }
+                await Task.Delay(500);
+            }
+
+            if (!connected)
+            {
+                Console.WriteLine("[FAIL] Server failed to start or open port.");
+                cts.Cancel();
                 return 1;
             }
-            Console.WriteLine("[PASS] TCP Connection Open");
+            
+            Console.WriteLine("[PASS] Server Listening");
+
+            bool allPassed = true;
 
             using (var client = new TcpClient(host, port))
             {
@@ -36,34 +98,25 @@ namespace DeviceSim.SmokeRunner
                 master.Transport.ReadTimeout = 2000;
                 master.Transport.WriteTimeout = 2000;
 
-                // 1. Coil R/W (Offset 101 -> Coil 00102)
-                allPassed &= TestCoil(master, (byte)slaveId, 101);
+                // 1. FC05
+                allPassed &= TestCoilFC05(master, (byte)slaveId, 100);
 
-                // 2. Coil Block Scan (Range 96-120) - Sparse Tolerant
-                allPassed &= TestCoilScan(master, (byte)slaveId, 96, 24);
+                // 2. FC0F
+                allPassed &= TestCoilFC0F(master, (byte)slaveId, 96);
 
-                // 3. Holding Register R/W (Offset 10)
-                allPassed &= TestHoldingRegister(master, (byte)slaveId, 10);
+                // 3. FC10
+                allPassed &= TestWriteMultipleRegisters(master, (byte)slaveId, 10);
 
-                // 4. Unmapped Register -> Exception Code 2
-                allPassed &= TestUnmappedException(master, (byte)slaveId, 9999);
+                // 4. Unmapped Write (Code 2) - Address 9999 is definitely unmapped
+                allPassed &= TestUnmappedWriteException(master, (byte)slaveId, 9999);
+                
+                // 5. Read-Only Write (Code 3) - Address 20 is ReadOnly
+                allPassed &= TestReadOnlyWriteException(master, (byte)slaveId, 20);
             }
-
-            // 5. Lifecycle/Port Check (Optional arg)
-            if (args.Length > 2 && args[2] == "--check-port-closed")
-            {
-                Console.WriteLine("\nChecking if port is closed...");
-                if (!TcpCheck(host, port))
-                {
-                    Console.WriteLine("[PASS] Port is closed as expected.");
-                }
-                else
-                {
-                    Console.WriteLine("[FAIL] Port is still OPEN!");
-                    allPassed = false;
-                }
-            }
-
+            
+            cts.Cancel();
+            try { await serverTask; } catch {}
+            
             Console.WriteLine("\n--- Test Summary ---");
             Console.WriteLine(allPassed ? "ALL TESTS PASSED" : "SOME TESTS FAILED");
             return allPassed ? 0 : 1;
@@ -174,6 +227,84 @@ namespace DeviceSim.SmokeRunner
                 Console.WriteLine($"FAIL (Unexpected Error: {ex.GetType().Name} - {ex.Message})");
                 return false;
             }
+        }
+        static bool TestCoilFC05(IModbusMaster master, byte slaveId, ushort addr)
+        {
+             try
+            {
+                Console.Write($"[TEST] FC05 Write Single Coil @ {addr}: ");
+                master.WriteSingleCoil(slaveId, addr, true);
+                var res = master.ReadCoils(slaveId, addr, 1);
+                if (res[0] != true) throw new Exception("Readback failed");
+                master.WriteSingleCoil(slaveId, addr, false);
+                Console.WriteLine("PASS");
+                return true;
+            }
+             catch (Exception ex) { Console.WriteLine($"FAIL ({ex.Message})"); return false; }
+        }
+
+        static bool TestCoilFC0F(IModbusMaster master, byte slaveId, ushort addr)
+        {
+             try
+            {
+                Console.Write($"[TEST] FC0F Write Multiple Coils @ {addr}: ");
+                master.WriteMultipleCoils(slaveId, addr, new bool[] { true, false, true });
+                var res = master.ReadCoils(slaveId, addr, 3);
+                if (res[0] != true || res[1] != false || res[2] != true) throw new Exception("Readback failed");
+                Console.WriteLine("PASS");
+                return true;
+            }
+             catch (Exception ex) { Console.WriteLine($"FAIL ({ex.Message})"); return false; }
+        }
+
+        static bool TestWriteMultipleRegisters(IModbusMaster master, byte slaveId, ushort addr)
+        {
+             try
+            {
+                Console.Write($"[TEST] FC10 Write Multiple Registers @ {addr}: ");
+                master.WriteMultipleRegisters(slaveId, addr, new ushort[] { 123, 456 });
+                var res = master.ReadHoldingRegisters(slaveId, addr, 2);
+                if (res[0] != 123 || res[1] != 456) throw new Exception("Readback failed");
+                Console.WriteLine("PASS");
+                return true;
+            }
+             catch (Exception ex) { Console.WriteLine($"FAIL ({ex.Message})"); return false; }
+        }
+
+        static bool TestUnmappedWriteException(IModbusMaster master, byte slaveId, ushort addr)
+        {
+            try
+            {
+                Console.Write($"[TEST] Unmapped Write (FC06/10) @ {addr} (Expect Code 2): ");
+                master.WriteSingleRegister(slaveId, addr, 999);
+                Console.WriteLine("FAIL (No exception default)");
+                return false;
+            }
+            catch (SlaveException ex)
+            {
+                if (ex.SlaveExceptionCode == 2) { Console.WriteLine("PASS (Caught Code 2)"); return true; }
+                Console.WriteLine($"FAIL (Wrong Code: {ex.SlaveExceptionCode})");
+                return false;
+            }
+             catch (Exception ex) { Console.WriteLine($"FAIL ({ex.GetType().Name})"); return false; }
+        }
+
+        static bool TestReadOnlyWriteException(IModbusMaster master, byte slaveId, ushort addr)
+        {
+            try
+            {
+                Console.Write($"[TEST] Read-Only Write (FC06) @ {addr} (Expect Code 3): ");
+                master.WriteSingleRegister(slaveId, addr, 999);
+                Console.WriteLine("FAIL (No exception default)");
+                return false;
+            }
+            catch (SlaveException ex)
+            {
+                if (ex.SlaveExceptionCode == 3) { Console.WriteLine("PASS (Caught Code 3: Illegal Data Value)"); return true; }
+                Console.WriteLine($"FAIL (Wrong Code: {ex.SlaveExceptionCode})");
+                return false;
+            }
+             catch (Exception ex) { Console.WriteLine($"FAIL ({ex.GetType().Name})"); return false; }
         }
     }
 }

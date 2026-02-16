@@ -96,4 +96,54 @@ public partial class DeviceInstanceViewModel : ViewModelBase
         
         UpdateFromModel();
     }
+
+    [RelayCommand]
+    public async Task ExportMap()
+    {
+        try
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("Name,Key,Type,Access,ModbusType,Address,Scale,BitField,NiagaraType,Unit,Generator");
+
+            foreach (var p in _instance.Points)
+            {
+                if (p.Modbus == null) continue;
+
+                string modbusType = p.Modbus.Kind;
+                string address = p.Modbus.Address.ToString();
+                
+                // Format Address like 40001 if holding, 30001 if input etc (conventional)
+                // However, raw address is often more useful for strict mapping.
+                // Let's stick to raw 0-based address for now, or maybe add both.
+                
+                string bitfield = "";
+                if (p.Modbus.BitField != null)
+                {
+                    bitfield = $"Bit {p.Modbus.BitField.StartBit} (Len {p.Modbus.BitField.BitLength})";
+                }
+
+                sb.AppendLine($"{p.Name},{p.Key},{p.Type},{p.Access},{modbusType},{address},{p.Modbus.Scale},{bitfield},{p.NiagaraType},{p.Unit},{p.Generator?.Type ?? "None"}");
+            }
+
+            var fileName = $"{_instance.Name.Replace(" ", "_")}_Map.csv";
+            var path = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments), fileName);
+            
+            await System.IO.File.WriteAllTextAsync(path, sb.ToString());
+
+            // Ideally show a notification/toast here.
+            // For now, maybe just log it?
+            // System.Diagnostics.Debug.WriteLine($"Exported to {path}");
+            
+            // Temporary: open the folder
+             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = path,
+                UseShellExecute = true
+            });
+        }
+        catch (System.Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Export failed: {ex.Message}");
+        }
+    }
 }

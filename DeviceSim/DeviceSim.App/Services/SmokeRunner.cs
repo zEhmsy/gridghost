@@ -67,6 +67,7 @@ public class SmokeRunner
             using var client = new TcpClient("127.0.0.1", port);
             var factory = new ModbusFactory();
             var master = factory.CreateMaster(client);
+            byte slaveId = 1;
 
             // Write Coil
             _logger.Log("Info", "Writing Coil 0 -> true", "System");
@@ -80,24 +81,100 @@ public class SmokeRunner
 
             // Write Register
             _logger.Log("Info", "Writing Register 0 -> 1234", "System");
-            await master.WriteSingleRegisterAsync(1, 0, 1234);
+            await master.WriteSingleRegisterAsync(slaveId, 0, 1234);
             var regVal = _pointStore.GetValue(deviceId, "Reg1");
             if (Convert.ToDouble(regVal.Value) != 1234) throw new Exception("Register write failed verification in PointStore.");
 
-            // Verify Unmapped Address (Exception Code 2)
+            // ---------------------------------------------------------
+            // 7. Modbus Perfection Tests (FC05, FC0F, FC10, Code 02, Code 03)
+            // ---------------------------------------------------------
+            _logger.Log("Info", "7. Running Modbus Perfection Tests...", "System");
+
+            // Test 7a: Write Single Coil (FC05) to unmapped address
             try
             {
-                // Reading unmapped address 100
-                await master.ReadHoldingRegistersAsync(1, 100, 1);
-                throw new Exception("Read unmapped register SHOULD have failed.");
+                _logger.Log("Info", "   Testing FC05 (Write Single Coil) to unmapped address 100...", "System");
+                await master.WriteSingleCoilAsync(slaveId, 100, true);
+                throw new Exception("   -> FAILED: Expected SlaveException (Code 2) for unmapped FC05, got Success.");
             }
-            catch (SlaveException se)
+            catch (SlaveException se) when (se.SlaveExceptionCode == 2)
             {
-                if (se.SlaveExceptionCode != 2) throw new Exception($"Expected Exception Code 2, got {se.SlaveExceptionCode}");
-                _logger.Log("Info", "Unmapped Address correctly returned Exception Code 2.", "System");
+                _logger.Log("Info", "   -> Success: Got Exception Code 2 (Illegal Data Address) for FC05.", "System");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"   -> FAILED: Expected SlaveException Code 2 for FC05, got {ex.GetType().Name}: {ex.Message}");
             }
 
-            _logger.Log("Info", "Smoke Test Passed!", "System");
+            // Test 7b: Write Multiple Coils (FC0F) to unmapped address
+            try
+            {
+                _logger.Log("Info", "   Testing FC0F (Write Multiple Coils) to unmapped address 101...", "System");
+                await master.WriteMultipleCoilsAsync(slaveId, 101, new bool[] { false });
+                throw new Exception("   -> FAILED: Expected SlaveException (Code 2) for unmapped FC0F, got Success.");
+            }
+            catch (SlaveException se) when (se.SlaveExceptionCode == 2)
+            {
+                _logger.Log("Info", "   -> Success: Got Exception Code 2 (Illegal Data Address) for FC0F.", "System");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"   -> FAILED: Expected SlaveException Code 2 for FC0F, got {ex.GetType().Name}: {ex.Message}");
+            }
+
+            // Test 7c: Write Single Register (FC06) to Unmapped Address (Expecting Code 02)
+            try
+            {
+                _logger.Log("Info", "   Testing Write Single Register (FC06) to Unmapped Address (9999)...", "System");
+                await master.WriteSingleRegisterAsync(slaveId, 9999, 123);
+                throw new Exception("   -> FAILED: Expected SlaveException (Code 2) for unmapped FC06, got Success.");
+            }
+            catch (SlaveException se) when (se.SlaveExceptionCode == 2)
+            {
+                 _logger.Log("Info", "   -> Success: Got Exception Code 2 (Illegal Data Address) for FC06.", "System");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"   -> FAILED: Expected SlaveException Code 2 for FC06, got {ex.GetType().Name}: {ex.Message}");
+            }
+
+            // Test 7d: Write Multiple Registers (FC10) to Unmapped Address (Expecting Code 02)
+            try
+            {
+                _logger.Log("Info", "   Testing Write Multiple Registers (FC10) to Unmapped Address (9999)...", "System");
+                await master.WriteMultipleRegistersAsync(slaveId, 9999, new ushort[] { 1, 2 });
+                throw new Exception("   -> FAILED: Expected SlaveException (Code 2) for unmapped FC10, got Success.");
+            }
+            catch (SlaveException se) when (se.SlaveExceptionCode == 2)
+            {
+                 _logger.Log("Info", "   -> Success: Got Exception Code 2 (Illegal Data Address) for FC10.", "System");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"   -> FAILED: Expected SlaveException Code 2 for FC10, got {ex.GetType().Name}: {ex.Message}");
+            }
+
+            // Test 7e: Read Holding Registers (FC03) from Unmapped Address (Expecting Code 02)
+            try
+            {
+                _logger.Log("Info", "   Testing Read Holding Registers (FC03) from Unmapped Address (9999)...", "System");
+                await master.ReadHoldingRegistersAsync(slaveId, 9999, 1);
+                throw new Exception("   -> FAILED: Expected SlaveException (Code 2) for unmapped FC03, got Success.");
+            }
+            catch (SlaveException se) when (se.SlaveExceptionCode == 2)
+            {
+                _logger.Log("Info", "   -> Success: Got Exception Code 2 (Illegal Data Address) for FC03.", "System");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"   -> FAILED: Expected SlaveException Code 2 for FC03, got {ex.GetType().Name}: {ex.Message}");
+            }
+
+            // Note: We cannot easily test Code 03 (Illegal Data Value) or Code 04 (Slave Device Failure)
+            // without a specific template setup that defines such conditions.
+            // For now, we verified unmapped addresses and basic writes/reads.
+            
+            _logger.Log("Info", "All Smoke Tests Passed!", "System");
         }
         catch (Exception ex)
         {

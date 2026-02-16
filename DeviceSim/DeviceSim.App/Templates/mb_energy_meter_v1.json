@@ -16,6 +16,7 @@
                 "kind": "input",
                 "dataType": "uint16"
             },
+            "access": "Read",
             "generator": {
                 "type": "sine",
                 "min": 225,

@@ -18,6 +18,26 @@ public class PointDefinition
     // Protocol specific mappings
     public ModbusPointConfig? Modbus { get; set; }
     public BacnetPointConfig? Bacnet { get; set; }
+
+    // Access Control & Override
+    public AccessMode Access { get; set; } = AccessMode.ReadWrite;
+    public ExternalWriteOverrideMode OverrideMode { get; set; } = ExternalWriteOverrideMode.None;
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum AccessMode
+{
+    Read,
+    Write,
+    ReadWrite
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum ExternalWriteOverrideMode
+{
+    None,
+    ForceStatic,
+    HoldForSeconds
 }
 
 public class GeneratorConfig
