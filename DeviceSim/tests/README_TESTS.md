@@ -17,7 +17,17 @@ pip install pymodbus
 1. Start **GridGhost** and ensure the default device (or a mapped device) is running on port 502.
 2. Run the script:
 ```bash
-python smoke_test.py 127.0.0.1 502
+# Run standard smoke test on localhost:1502
+python .\smoke_test.py
+
+# Specifica porta diversa
+python .\smoke_test.py --port 1503
+
+# Se vuoi scrivere su altri holding mappati
+python .\smoke_test.py --hr-offsets 10,12 --hr-values 26,50
+
+# Dopo che spegni il device in UI, verifica che la porta sia chiusa
+python .\smoke_test.py --expect-stopped
 ```
 
 ### What it tests:
