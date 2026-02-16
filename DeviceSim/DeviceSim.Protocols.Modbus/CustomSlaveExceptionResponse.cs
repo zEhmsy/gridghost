@@ -12,7 +12,6 @@ namespace DeviceSim.Protocols.Modbus
             TransactionId = transactionId;
             SlaveAddress = slaveAddress;
             FunctionCode = (byte)(functionCode | 0x80);
-            FunctionCode = (byte)(functionCode | 0x80);
             _exceptionCode = exceptionCode;
         }
 

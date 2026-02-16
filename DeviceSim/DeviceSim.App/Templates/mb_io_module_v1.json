@@ -13,7 +13,7 @@
             "initialValue": false,
             "modbus": {
                 "address": 0,
-                "kind": "Discrete",
+                "kind": "discrete",
                 "dataType": "Bool"
             }
         },
@@ -23,7 +23,7 @@
             "initialValue": false,
             "modbus": {
                 "address": 1,
-                "kind": "Discrete",
+                "kind": "discrete",
                 "dataType": "Bool"
             }
         },
@@ -33,7 +33,7 @@
             "initialValue": false,
             "modbus": {
                 "address": 10,
-                "kind": "Coil",
+                "kind": "coil",
                 "dataType": "Bool"
             }
         },
@@ -43,21 +43,21 @@
             "initialValue": false,
             "modbus": {
                 "address": 11,
-                "kind": "Coil",
+                "kind": "coil",
                 "dataType": "Bool"
             }
         },
         {
             "key": "ai_01",
-            "type": "float32",
+            "type": "int16",
             "initialValue": 0.0,
             "modbus": {
                 "address": 20,
-                "kind": "Input",
-                "dataType": "Float32"
+                "kind": "input",
+                "dataType": "int16"
             },
-            "simulator": {
-                "type": "Sinewave",
+            "generator": {
+                "type": "sine",
                 "min": 0,
                 "max": 10,
                 "periodSeconds": 10
@@ -65,12 +65,12 @@
         },
         {
             "key": "ao_01",
-            "type": "float32",
+            "type": "int16",
             "initialValue": 0.0,
             "modbus": {
                 "address": 30,
-                "kind": "Holding",
-                "dataType": "Float32"
+                "kind": "holding",
+                "dataType": "int16"
             }
         }
     ]

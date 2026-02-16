@@ -50,6 +50,7 @@ public partial class App : Application
     {
         // Core Services
         services.AddSingleton<ILogSink, LogService>();
+        services.AddSingleton<ConfigurationService>();
         services.AddSingleton<IPointStore, PointStore>();
         services.AddSingleton<TemplateRepository>(s => new TemplateRepository(System.IO.Path.Combine(System.AppContext.BaseDirectory, "Templates"))); // Path: bin/Debug/net8.0/Templates
         

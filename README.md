@@ -29,6 +29,11 @@ GridGhost is a lightweight, high-performance Modbus (and soon BACnet) device sim
   - **Enum Bitfields**: Map integer simulation values to specific bit-ranges in a register for high-density Niagara integration.
   - **Standardized Exception Codes**: Correctly returns **Exception Code 2 (Illegal Data Address)** for unmapped registers, ensuring reliable scan synchronization.
 - **Direct Store Integration**: No polling loops. Modbus registers map directly to the internal simulation store for real-time reactivity.
+- **Persistence & Logging**:
+  - **Auto-Save**: Device configurations (Network, Points, etc.) are automatically saved to `%APPDATA%\GridGhost\config.json`.
+  - **Structured Logging**: Diagnostic logs are written in JSONL format to `%APPDATA%\GridGhost\logs\`.
+  - **Regression Harness**: Built-in C# `SmokeRunner` service for automated self-tests of protocol compliance.
+- **Robust Lifecycle**: Thread-safe device start/stop operations with comprehensive state tracking (Starting, Running, Stopping, Faulted).
 - **Dynamic Data Generators**:
   - **Sine Wave**: Perfect for temperature and CO2 simulation.
   - **Ramp**: For testing high/low alarms.
@@ -83,10 +88,10 @@ GridGhost implements a proactive validation layer that intercepts Modbus request
 - [x] Template-based device instantiation.
 - [x] Direct binding loop-free architecture.
 
-### Phase 2: Persistence & Usability (Next)
-- [ ] **Project Save/Load**: Persist your workspace configuration to `.ggproj` files.
+### Phase 2: Persistence & Usability (Completed)
+- [x] **Auto-Save Configuration**: Persist your workspace configuration to JSON.
+- [x] **Structured Logging**: Save simulation logs to JSONL for analysis.
 - [ ] **Custom Templates UI**: A proper visual editor for creating and modifying templates within the app.
-- [ ] **Log Export**: Save simulation logs to CSV/Text for analysis.
 
 ### Phase 3: BACnet & Advanced Simulation
 - [ ] **BACnet/IP Support**: Full implementation of a simulated BACnet stack.

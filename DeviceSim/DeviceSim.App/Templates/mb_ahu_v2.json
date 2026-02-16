@@ -9,15 +9,15 @@
     "points": [
         {
             "key": "supply_temp",
-            "type": "float32",
+            "type": "int16",
             "initialValue": 18.0,
             "modbus": {
                 "address": 0,
-                "kind": "Input",
-                "dataType": "Float32"
+                "kind": "input",
+                "dataType": "int16"
             },
-            "simulator": {
-                "type": "Sinewave",
+            "generator": {
+                "type": "sine",
                 "min": 17,
                 "max": 19,
                 "periodSeconds": 45
@@ -25,15 +25,15 @@
         },
         {
             "key": "return_temp",
-            "type": "float32",
+            "type": "int16",
             "initialValue": 24.0,
             "modbus": {
                 "address": 2,
-                "kind": "Input",
-                "dataType": "Float32"
+                "kind": "input",
+                "dataType": "int16"
             },
-            "simulator": {
-                "type": "Sinewave",
+            "generator": {
+                "type": "sine",
                 "min": 23,
                 "max": 25,
                 "periodSeconds": 60
@@ -41,22 +41,22 @@
         },
         {
             "key": "supply_fan_speed",
-            "type": "float32",
+            "type": "int16",
             "initialValue": 80.0,
             "modbus": {
                 "address": 10,
-                "kind": "Holding",
-                "dataType": "Float32"
+                "kind": "holding",
+                "dataType": "int16"
             }
         },
         {
             "key": "return_fan_speed",
-            "type": "float32",
+            "type": "int16",
             "initialValue": 75.0,
             "modbus": {
                 "address": 12,
-                "kind": "Holding",
-                "dataType": "Float32"
+                "kind": "holding",
+                "dataType": "int16"
             }
         },
         {
@@ -65,7 +65,7 @@
             "initialValue": false,
             "modbus": {
                 "address": 100,
-                "kind": "Discrete",
+                "kind": "discrete",
                 "dataType": "Bool"
             }
         },
@@ -75,7 +75,7 @@
             "initialValue": true,
             "modbus": {
                 "address": 101,
-                "kind": "Coil",
+                "kind": "coil",
                 "dataType": "Bool"
             }
         }

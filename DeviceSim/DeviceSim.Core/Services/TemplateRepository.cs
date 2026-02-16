@@ -18,6 +18,11 @@ public class TemplateRepository
 
     public async Task<List<DeviceTemplate>> LoadAllAsync()
     {
+        return await Task.Run(() => LoadAll());
+    }
+
+    public List<DeviceTemplate> LoadAll()
+    {
         var templates = new List<DeviceTemplate>();
         
         if (!Directory.Exists(_templatesPath))
@@ -31,7 +36,7 @@ public class TemplateRepository
         {
             try
             {
-                var json = await File.ReadAllTextAsync(file);
+                var json = File.ReadAllText(file);
                 var template = JsonSerializer.Deserialize<DeviceTemplate>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 if (template != null)
                 {

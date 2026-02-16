@@ -193,7 +193,7 @@ public partial class PointViewModel : ObservableObject
         _genPeriod = def.Generator.PeriodSeconds;
         
         _isStatic = _genType == "static";
-        _isEditingAllowed = _device.Status != DeviceStatus.Running;
+        _isEditingAllowed = _device.State != DeviceInstance.DeviceState.Running;
     }
 
     public void Update(PointValue val)

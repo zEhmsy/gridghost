@@ -64,6 +64,22 @@ namespace DeviceSim.Protocols.Modbus
                         linkedStore.HoldingRegisters.WritePoints(writeMulti.StartAddress, writeMulti.Data.ToArray());
                     }
                 }
+                else if (request is NModbus.Message.WriteSingleCoilRequestResponse writeCoil)
+                {
+                    if (DataStore is LinkedDataStore linkedStore)
+                    {
+                        bool val = writeCoil.Data[0] == 0xFF00;
+                        linkedStore.CoilDiscretes.WritePoints(writeCoil.StartAddress, new bool[] { val });
+                    }
+                }
+                else if (request is NModbus.Message.WriteMultipleCoilsRequest writeMultiCoils)
+                {
+                    if (DataStore is LinkedDataStore linkedStore)
+                    {
+                         // DiscreteCollection ToArray returns bool[]
+                         linkedStore.CoilDiscretes.WritePoints(writeMultiCoils.StartAddress, writeMultiCoils.Data.ToArray());
+                    }
+                }
             }
             catch (IllegalDataAddressException)
             {

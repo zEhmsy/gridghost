@@ -20,18 +20,17 @@ public partial class DeviceInstanceViewModel : ViewModelBase
     [ObservableProperty]
     private bool _enabled;
 
+    private bool _isUpdatingFromModel;
+
     partial void OnEnabledChanged(bool value)
     {
-        // Fire and forget async toggle
-        // We use Dispatcher or Task.Run to avoid blocking the UI thread if it's synchronous
-        // But the Manager methods are async.
-        // We need to ensure we don't re-trigger if the value was set FROM the model update.
-        
-        if (value && _instance.Status != DeviceStatus.Running)
+        if (_isUpdatingFromModel) return;
+
+        if (value)
         {
             _ = _deviceManager.StartDeviceAsync(Id);
         }
-        else if (!value && _instance.Status == DeviceStatus.Running)
+        else
         {
             _ = _deviceManager.StopDeviceAsync(Id);
         }
@@ -51,10 +50,12 @@ public partial class DeviceInstanceViewModel : ViewModelBase
                 OnPropertyChanged();
                 
                 // Restart if running to apply port change
-                if (_instance.Status == DeviceStatus.Running)
+                if (_instance.State == DeviceInstance.DeviceState.Running)
                 {
-                    _ = Toggle(); // Stop
-                    _ = Toggle(); // Start again with new port
+                    _ = _deviceManager.StopDeviceAsync(_instance.Id).ContinueWith(async t => 
+                    {
+                        await _deviceManager.StartDeviceAsync(_instance.Id);
+                    });
                 }
             }
         }
@@ -64,27 +65,27 @@ public partial class DeviceInstanceViewModel : ViewModelBase
     {
         _instance = instance;
         _deviceManager = deviceManager;
-        _status = _instance.Status.ToString(); // Initialize backing field
+        _status = _instance.State.ToString(); 
         UpdateFromModel();
     }
 
     public void UpdateFromModel()
     {
-         Status = _instance.Status.ToString();
+         _isUpdatingFromModel = true;
+         Status = _instance.State.ToString();
          Enabled = _instance.Enabled;
          LastError = _instance.LastError;
          OnPropertyChanged(nameof(Status));
          OnPropertyChanged(nameof(Enabled));
          OnPropertyChanged(nameof(LastError));
          OnPropertyChanged(nameof(Port));
+         _isUpdatingFromModel = false;
     }
 
     [RelayCommand]
     public async Task Toggle()
     {
-        // Use the actual instance status from the model to decide action,
-        // rather than the ViewModel property which might have been toggled by UI binding already.
-        if (_instance.Status == DeviceStatus.Running)
+        if (_instance.State == DeviceInstance.DeviceState.Running)
         {
             await _deviceManager.StopDeviceAsync(_instance.Id);
         }

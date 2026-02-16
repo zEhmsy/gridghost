@@ -9,15 +9,15 @@
     "points": [
         {
             "key": "voltage_l1",
-            "type": "float32",
+            "type": "uint16",
             "initialValue": 230.0,
             "modbus": {
                 "address": 1000,
-                "kind": "Input",
-                "dataType": "Float32"
+                "kind": "input",
+                "dataType": "uint16"
             },
-            "simulator": {
-                "type": "Sinewave",
+            "generator": {
+                "type": "sine",
                 "min": 225,
                 "max": 235,
                 "periodSeconds": 10
@@ -25,15 +25,15 @@
         },
         {
             "key": "current_l1",
-            "type": "float32",
+            "type": "uint16",
             "initialValue": 10.0,
             "modbus": {
                 "address": 1002,
-                "kind": "Input",
-                "dataType": "Float32"
+                "kind": "input",
+                "dataType": "uint16"
             },
-            "simulator": {
-                "type": "Sinewave",
+            "generator": {
+                "type": "sine",
                 "min": 5,
                 "max": 15,
                 "periodSeconds": 30
@@ -41,15 +41,15 @@
         },
         {
             "key": "power_active",
-            "type": "float32",
+            "type": "uint16",
             "initialValue": 2300.0,
             "modbus": {
                 "address": 1010,
-                "kind": "Input",
-                "dataType": "Float32"
+                "kind": "input",
+                "dataType": "uint16"
             },
-            "simulator": {
-                "type": "Sinewave",
+            "generator": {
+                "type": "sine",
                 "min": 1000,
                 "max": 3000,
                 "periodSeconds": 45
@@ -57,12 +57,12 @@
         },
         {
             "key": "energy_total",
-            "type": "float32",
+            "type": "uint16",
             "initialValue": 10000.0,
             "modbus": {
                 "address": 1020,
-                "kind": "Input",
-                "dataType": "Float32"
+                "kind": "input",
+                "dataType": "uint16"
             }
         }
     ]
