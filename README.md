@@ -142,6 +142,35 @@ To build the Windows installer (requires [Inno Setup 6](https://jrsoftware.org/i
 & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup.iss
 ```
 
+## Linux Build & Run
+
+### Prerequisites
+- .NET 8 SDK
+- `libfontconfig1` (for Avalonia UI)
+
+### Build
+Use the provided script or dotnet commands:
+```bash
+# Make script executable
+chmod +x scripts/publish_linux.sh
+# Run
+./scripts/publish_linux.sh
+```
+
+Or manually:
+```bash
+dotnet publish DeviceSim/DeviceSim.App/DeviceSim.App.csproj -c Release -r linux-x64 --self-contained false -o ./publish/linux-x64
+```
+
+### Run
+```bash
+cd publish/linux-x64
+./DeviceSim.App
+```
+
+> **Note**: Binding to ports < 1024 (e.g. standard Modbus 502) requires root privileges or `CAP_NET_BIND_SERVICE`. 
+> If you see `AccessDenied`, either run with `sudo` or use ports > 1024 (e.g. 1502).
+
 ## License
 
 Licensed under the [Apache License, Version 2.0](LICENSE).

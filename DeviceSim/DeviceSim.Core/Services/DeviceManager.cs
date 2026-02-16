@@ -101,6 +101,18 @@ public class DeviceManager
                 return;
             }
 
+            // Linux Privileged Port Check
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux) && 
+                instance.Network.Port < 1024)
+            {
+                // We can't easily check for CAP_NET_BIND_SERVICE, so we warn if 502 is used and fails.
+                // But better to fail fast or at least Log a warning?
+                // The requirement says: "add a clear user-visible note/error when bind fails on Linux due to permissions (<1024)."
+                // We'll let it try to start, and catch the specific socket exception below to give a better error message.
+                // However, user asked to "just show an actionable error message".
+                // We'll do it in the catch block for AccessDenied/SocketException.
+            }
+
             var adapter = _adapters.FirstOrDefault(a => a.Protocol == instance.Protocol);
             if (adapter == null)
             {
@@ -142,9 +154,15 @@ public class DeviceManager
                 }
                 catch (Exception ex)
                 {
+                    var msg = ex.Message;
+                    if (ex is System.Net.Sockets.SocketException sockEx && sockEx.SocketErrorCode == System.Net.Sockets.SocketError.AccessDenied) 
+                    {
+                         msg = $"Access Denied (Port {instance.Network.Port}). On Linux, ports < 1024 require root or 'setcap'. Try port 1502+.";
+                    }
+                    
                     _logger.LogException(ex, "Device adapter crashed", id);
                     instance.State = DeviceInstance.DeviceState.Faulted;
-                    instance.LastError = ex.Message;
+                    instance.LastError = msg;
                     instance.Enabled = false;
                     OnDeviceUpdated?.Invoke(instance);
                 }

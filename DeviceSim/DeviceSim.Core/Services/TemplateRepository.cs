@@ -30,7 +30,7 @@ public class TemplateRepository
              return templates;
         }
 
-        var files = Directory.GetFiles(_templatesPath, "*.json");
+        var files = Directory.EnumerateFiles(_templatesPath, "*.json");
 
         foreach (var file in files)
         {

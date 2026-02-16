@@ -29,7 +29,7 @@ public class TemplateRepository
 
             try 
             {
-                var files = Directory.GetFiles(_templatesPath, "*.json");
+                var files = Directory.EnumerateFiles(_templatesPath, "*.json");
                 foreach (var file in files)
                 {
                     try
