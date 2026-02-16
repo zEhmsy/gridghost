@@ -3,14 +3,14 @@
 [Setup]
 AppId={{C1A6E7B9-3B4D-4F2E-9C1D-8A7B6C5D4E3F}
 AppName=GridGhost
-AppVersion=1.2.0
+AppVersion=1.3.0
 AppPublisher=zEhmsy
 AppPublisherURL=https://github.com/zEhmsy/gridghost
 DefaultDirName={autopf}\GridGhost
 DefaultGroupName=GridGhost
 AllowNoIcons=yes
 OutputDir=.
-OutputBaseFilename=GridGhost-1.2.0-Setup
+OutputBaseFilename=GridGhost-1.3.0-Setup
 SetupIconFile=DeviceSim.App\Assets\Icons\gridghost_icon.ico
 Compression=lzma
 SolidCompression=yes

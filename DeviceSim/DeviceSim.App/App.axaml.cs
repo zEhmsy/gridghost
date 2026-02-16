@@ -52,7 +52,8 @@ public partial class App : Application
         services.AddSingleton<ILogSink, LogService>();
         services.AddSingleton<ConfigurationService>();
         services.AddSingleton<IPointStore, PointStore>();
-        services.AddSingleton<TemplateRepository>(s => new TemplateRepository(System.IO.Path.Combine(System.AppContext.BaseDirectory, "Templates"))); // Path: bin/Debug/net8.0/Templates
+        services.AddSingleton<DeviceSim.Core.Services.TemplateRepository>(s => new DeviceSim.Core.Services.TemplateRepository(System.IO.Path.Combine(System.AppContext.BaseDirectory, "Templates"))); 
+        services.AddSingleton<DeviceSim.App.Services.TemplateRepository>(s => new DeviceSim.App.Services.TemplateRepository(System.IO.Path.Combine(System.AppContext.BaseDirectory, "Templates")));
         
         // Adapters
         services.AddSingleton<IProtocolAdapter, ModbusAdapter>();

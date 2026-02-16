@@ -110,7 +110,7 @@ GridGhost v1.2.0 introduces strict compliance features to match the robustness o
 ### Phase 2: Persistence & Usability (Completed)
 - [x] **Auto-Save Configuration**: Persist your workspace configuration to JSON.
 - [x] **Structured Logging**: Save simulation logs to JSONL for analysis.
-- [ ] **Custom Templates UI**: A proper visual editor for creating and modifying templates within the app.
+- [x] **Custom Templates UI**: A proper visual editor for creating and modifying templates within the app.
 
 ### Phase 3: BACnet & Advanced Simulation
 - [ ] **BACnet/IP Support**: Full implementation of a simulated BACnet stack.

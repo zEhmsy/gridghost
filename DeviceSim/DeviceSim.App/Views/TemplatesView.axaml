@@ -1,37 +1,158 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:DeviceSim.App.ViewModels"
+             xmlns:models="using:DeviceSim.Core.Models"
              x:Class="DeviceSim.App.Views.TemplatesView"
              x:DataType="vm:TemplatesViewModel">
 
-    <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
-            <TextBlock Text="Templates" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
-            <Button Content="Import JSON" Command="{Binding ImportCommand}"/>
-        </StackPanel>
+    <Grid ColumnDefinitions="300, *">
+        <!-- LEFT PANEL: List -->
+        <Border Grid.Column="0" BorderBrush="#303030" BorderThickness="0,0,1,0" Background="#1e1e1e">
+             <Grid RowDefinitions="Auto, *, Auto">
+                 <StackPanel Grid.Row="0" Margin="10" Spacing="5">
+                     <TextBlock Text="TEMPLATES" FontWeight="Bold" Foreground="#aaaaaa"/>
+                     <Grid ColumnDefinitions="*, Auto">
+                         <Button Grid.Column="0" Content="New" Command="{Binding CreateNewCommand}" HorizontalAlignment="Stretch" Margin="0,0,5,0"/>
+                         <Button Grid.Column="1" Content="Imp" Command="{Binding ImportCommand}" ToolTip.Tip="Import JSON"/>
+                     </Grid>
+                 </StackPanel>
 
-        <Grid ColumnDefinitions="*, 300">
-            <ListBox Grid.Column="0" ItemsSource="{Binding Templates}" SelectedItem="{Binding SelectedTemplate}">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel>
-                            <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
-                            <TextBlock Text="{Binding Protocol}" FontStyle="Italic"/>
-                             <TextBlock Text="{Binding Network.Port, StringFormat='Port: {0}'}"/>
+                 <ListBox Grid.Row="1" ItemsSource="{Binding Templates}" SelectedItem="{Binding SelectedTemplate}" Background="Transparent">
+                     <ListBox.ItemTemplate>
+                         <DataTemplate>
+                             <StackPanel Spacing="2">
+                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                 <TextBlock Text="{Binding Protocol}" FontSize="11" Foreground="#888888"/>
+                             </StackPanel>
+                         </DataTemplate>
+                     </ListBox.ItemTemplate>
+                 </ListBox>
+                 
+                 <StackPanel Grid.Row="2" Margin="10" Spacing="5">
+                      <Button Content="Duplicate" Command="{Binding DuplicateCommand}" HorizontalAlignment="Stretch"/>
+                      <Button Content="Delete" Command="{Binding DeleteCommand}" HorizontalAlignment="Stretch" Background="#552222"/>
+                 </StackPanel>
+             </Grid>
+        </Border>
+
+        <!-- RIGHT PANEL: Editor -->
+        <ContentControl Grid.Column="1" Content="{Binding EditorViewModel}">
+            <ContentControl.ContentTemplate>
+                <DataTemplate DataType="vm:TemplateEditorViewModel">
+                    <Grid RowDefinitions="Auto, *, Auto" Margin="20">
+                        
+                        <!-- Header / Metadata -->
+                        <StackPanel Grid.Row="0" Spacing="10">
+                            <TextBlock Text="Edit Template" FontSize="20" FontWeight="Bold"/>
+                            
+                             <Grid ColumnDefinitions="Auto, *, Auto, Auto" RowDefinitions="Auto, Auto" >
+                                 <!-- Row 1 -->
+                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" VerticalAlignment="Center" Width="80"/>
+                                 <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Name}" Margin="0,0,10,5"/>
+                                 
+                                 <TextBlock Grid.Row="0" Grid.Column="2" Text="ID:" VerticalAlignment="Center" Width="30"/>
+                                 <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding Id}" IsReadOnly="True" Width="150" Margin="0,0,0,5" Foreground="#888888"/>
+
+                                 <!-- Row 2 -->
+                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Protocol:" VerticalAlignment="Center"/>
+                                 <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Source={x:Static vm:TemplateEditorViewModel.ProtocolTypes}}" 
+                                           SelectedItem="{Binding Protocol}" Margin="0,0,10,0" IsEnabled="False"/> 
+                                           <!-- Parsing Enum for ComboBox might need converter or list in VM. 
+                                                Actually ProtocolTypes is not a static property on DeviceTemplate. 
+                                                Let's just bind to Protocol enum directly if Avalonia supports it, or use VM property.
+                                           -->
+                                 
+                                 <TextBlock Grid.Row="1" Grid.Column="2" Text="Port:" VerticalAlignment="Center"/>
+                                 <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding DefaultPort}" Width="150"/>
+                             </Grid>
+                             
+                             <Separator Background="#303030" Height="2"/>
                         </StackPanel>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
 
-            <StackPanel Grid.Column="1" Margin="10" Spacing="10" IsVisible="{Binding SelectedTemplate, Converter={x:Static ObjectConverters.IsNotNull}}">
-                <TextBlock Text="Actions" FontWeight="Bold"/>
-                <Button Content="Create Instance" Command="{Binding CreateInstanceCommand}" HorizontalAlignment="Stretch"/>
-                <Button Content="Delete Template" Command="{Binding DeleteCommand}" HorizontalAlignment="Stretch" Background="#ffcccc"/>
-                
-                <TextBlock Text="Preview" Margin="0,20,0,0"/>
-                <TextBox Text="{Binding SelectedTemplate.Id}" IsReadOnly="True"/>
-                <!-- We could show raw JSON preview here -->
-            </StackPanel>
-        </Grid>
-    </DockPanel>
+                        <!-- Points Editor -->
+                        <Grid Grid.Row="1" RowDefinitions="Auto, *" Margin="0,10,0,0">
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="0,0,0,5">
+                                <TextBlock Text="Points Definition" FontWeight="Bold" VerticalAlignment="Center"/>
+                                <Button Content="Add Point" Command="{Binding AddPointCommand}" Classes="accent"/>
+                                <Button Content="Remove Selected" Command="{Binding RemovePointCommand}" 
+                                        CommandParameter="{Binding #PointsGrid.SelectedItem}" />
+                            </StackPanel>
+                            
+                            <DataGrid Grid.Row="1" Name="PointsGrid" ItemsSource="{Binding Points}" AutoGenerateColumns="False" 
+                                      CanUserResizeColumns="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="#303030">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="120"/>
+                                    <DataGridTextColumn Header="Name" Binding="{Binding Point.Name}" Width="120"/>
+                                    
+                                    <!-- Modbus specific columns -->
+                                    <DataGridTemplateColumn Header="Kind" Width="100">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox ItemsSource="{Binding ModbusKinds}" SelectedItem="{Binding ModbusKind}" HorizontalAlignment="Stretch"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTextColumn Header="Offset" Binding="{Binding ModbusAddress}" Width="60"/>
+                                    <DataGridTextColumn Header="Addr Preview" Binding="{Binding NiagaraAddressPreview}" IsReadOnly="True" Width="80" Foreground="#88aaaa"/>
+
+                                    <DataGridTemplateColumn Header="Type" Width="80">
+                                         <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox ItemsSource="{Binding PointTypes}" SelectedItem="{Binding Type}" HorizontalAlignment="Stretch"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    
+                                    <!-- Generator -->
+                                    <DataGridTemplateColumn Header="Generator" Width="80">
+                                         <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox ItemsSource="{Binding GeneratorTypes}" SelectedItem="{Binding GeneratorType}" HorizontalAlignment="Stretch"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    
+                                    <DataGridTextColumn Header="Scale" Binding="{Binding Scale}" Width="60"/>
+                                    
+                                    <DataGridTemplateColumn Header="Access" Width="90">
+                                         <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox ItemsSource="{Binding AccessModes}" SelectedItem="{Binding Access}" HorizontalAlignment="Stretch"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+
+                        <!-- Footer / Validation -->
+                        <StackPanel Grid.Row="2" Margin="0,10,0,0">
+                             <Border Background="#331100" BorderBrush="#aa4400" BorderThickness="1" Padding="10" 
+                                     IsVisible="{Binding HasErrors}" Margin="0,0,0,10">
+                                 <TextBlock Text="{Binding ValidationErrors}" Foreground="#ffccaa" TextWrapping="Wrap"/>
+                             </Border>
+                             
+                             <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Right">
+                                 <Button Content="Create Device Instance from this Template" 
+                                         Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).CreateInstanceCommand}"
+                                         IsEnabled="{Binding !HasErrors}"/>
+                                 <Button Content="SAVE TEMPLATE" 
+                                         Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).SaveEditorCommand}"
+                                         Classes="accent" Width="150" FontWeight="Bold" Background="#0066cc"/>
+                             </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ContentControl.ContentTemplate>
+        </ContentControl>
+        
+        <!-- Empty State overlay if EditorViewModel is null? 
+             Actually ContentControl will just show nothing if null. 
+             We can add a fallback. -->
+        <TextBlock Grid.Column="1" Text="Select a template to view or edit" 
+                   HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#555555"
+                   IsVisible="{Binding EditorViewModel, Converter={x:Static ObjectConverters.IsNull}}"/>
+    </Grid>
 </UserControl>
