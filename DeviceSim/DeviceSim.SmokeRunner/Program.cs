@@ -55,6 +55,17 @@ namespace DeviceSim.SmokeRunner
                    
                    // Holding 20 -> Read Only
                    new DeviceSim.Core.Models.PointDefinition { Key = "RO20", Type="uint16", Access=DeviceSim.Core.Models.AccessMode.Read, Modbus = new DeviceSim.Core.Models.ModbusPointConfig { Kind="Holding", Address=20 } },
+                   
+                   // Holding 30 -> HoldForSeconds
+                   new DeviceSim.Core.Models.PointDefinition { 
+                       Key = "H30", 
+                       Type="uint16", 
+                       Access=DeviceSim.Core.Models.AccessMode.ReadWrite, 
+                       OverrideMode = DeviceSim.Core.Models.ExternalWriteOverrideMode.HoldForSeconds,
+                       OverrideDurationSeconds = 2,
+                       Generator = new DeviceSim.Core.Models.GeneratorConfig { Type = "random" },
+                       Modbus = new DeviceSim.Core.Models.ModbusPointConfig { Kind="Holding", Address=30 } 
+                   },
                 }
             };
             
@@ -112,6 +123,9 @@ namespace DeviceSim.SmokeRunner
                 
                 // 5. Read-Only Write (Code 3) - Address 20 is ReadOnly
                 allPassed &= TestReadOnlyWriteException(master, (byte)slaveId, 20);
+
+                // 6. HoldForSeconds Override
+                allPassed &= await TestHoldForSecondsOverride(master, (byte)slaveId, 30, device.Points.Find(p => p.Key == "H30"));
             }
             
             cts.Cancel();
@@ -305,6 +319,35 @@ namespace DeviceSim.SmokeRunner
                 return false;
             }
              catch (Exception ex) { Console.WriteLine($"FAIL ({ex.GetType().Name})"); return false; }
+        }
+
+        static async Task<bool> TestHoldForSecondsOverride(IModbusMaster master, byte slaveId, ushort addr, DeviceSim.Core.Models.PointDefinition point)
+        {
+            try
+            {
+                Console.Write($"[TEST] HoldForSeconds Override @ {addr}: ");
+                
+                if (point.Generator?.Type != "random") throw new Exception("Expected random generator initially");
+                
+                master.WriteSingleRegister(slaveId, addr, 555);
+                await Task.Delay(100);
+                
+                if (point.Generator?.Type != "static") throw new Exception("Expected generator to be static during hold");
+                var res = master.ReadHoldingRegisters(slaveId, addr, 1);
+                if (res[0] != 555) throw new Exception("Readback failed");
+                
+                await Task.Delay(2100); // Wait for timer (2s)
+                
+                if (point.Generator?.Type != "random") throw new Exception("Expected generator to return to random after hold");
+                
+                Console.WriteLine("PASS");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"FAIL ({ex.Message})");
+                return false;
+            }
         }
     }
 }

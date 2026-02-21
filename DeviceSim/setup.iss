@@ -24,8 +24,8 @@ Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "Publish\DeviceSim.App.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "Publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "DeviceSim.App\Publish\DeviceSim.App.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "DeviceSim.App\Publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Exclude the exe from the wildcard source to avoid conflict flag if needed, but ignoreversion handles it.
 
 [Icons]

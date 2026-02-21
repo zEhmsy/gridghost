@@ -48,6 +48,15 @@ public class PointStore : IPointStore
         }
     }
 
+    public void UpdateOverrideStatus(string deviceId, string pointKey, string? status)
+    {
+        if (_store.TryGetValue(deviceId, out var devicePoints) && devicePoints.TryGetValue(pointKey, out var existing))
+        {
+            existing.OverrideStatus = status;
+            OnPointChanged?.Invoke(deviceId, pointKey, existing);
+        }
+    }
+
     public PointValue GetValue(string deviceId, string pointKey)
     {
         if (_store.TryGetValue(deviceId, out var devicePoints) && devicePoints.TryGetValue(pointKey, out var value))

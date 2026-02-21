@@ -299,9 +299,59 @@ public class ModbusPointSource<T> : IPointSource<T>
 
                     _store.SetValue(_deviceId, def.Key, val, _writeSource);
 
-                    if (def.OverrideMode == ExternalWriteOverrideMode.ForceStatic && def.Generator != null)
+                    if (def.Generator != null)
                     {
-                         def.Generator.Type = "static";
+                        if (def.OverrideMode == ExternalWriteOverrideMode.ForceStatic)
+                        {
+                            def.Generator.Type = "static";
+                            if (def.OverrideCts != null)
+                            {
+                                def.OverrideCts.Cancel();
+                                def.OverrideCts.Dispose();
+                                def.OverrideCts = null;
+                            }
+                            _store.UpdateOverrideStatus(_deviceId, def.Key, null);
+                        }
+                        else if (def.OverrideMode == ExternalWriteOverrideMode.HoldForSeconds)
+                        {
+                            if (def.OverrideCts != null)
+                            {
+                                def.OverrideCts.Cancel();
+                                def.OverrideCts.Dispose();
+                            }
+
+                            if (def.OriginalGeneratorType == null || def.Generator.Type != "static")
+                                def.OriginalGeneratorType = def.Generator.Type;
+
+                            def.Generator.Type = "static";
+                            
+                            var cts = new System.Threading.CancellationTokenSource();
+                            def.OverrideCts = cts;
+                            int duration = def.OverrideDurationSeconds > 0 ? def.OverrideDurationSeconds : 10;
+                            string original = def.OriginalGeneratorType;
+
+                            Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    int remaining = duration;
+                                    while (remaining > 0)
+                                    {
+                                        _store.UpdateOverrideStatus(_deviceId, def.Key, $"Override ({remaining}s)");
+                                        await Task.Delay(1000, cts.Token);
+                                        remaining--;
+                                    }
+
+                                    if (def.Generator.Type == "static") 
+                                        def.Generator.Type = original;
+                                        
+                                    def.OriginalGeneratorType = null;
+                                    def.OverrideCts = null;
+                                    _store.UpdateOverrideStatus(_deviceId, def.Key, null);
+                                }
+                                catch (TaskCanceledException) { }
+                            });
+                        }
                     }
                 }
             }

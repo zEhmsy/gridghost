@@ -168,6 +168,7 @@ public partial class TemplatesViewModel : ViewModelBase, IChangeTracker
         
         // Auto-navigate to Points view to monitor newly created device
         WeakReferenceMessenger.Default.Send(new NavigationMessage("Points"));
+        WeakReferenceMessenger.Default.Send(new SelectDeviceMessage(instance.Id));
         
         await Task.CompletedTask;
     }

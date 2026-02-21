@@ -199,8 +199,35 @@ public partial class PointViewModel : ObservableObject
 
     [ObservableProperty] private string _type;
     [ObservableProperty] private string _niagaraType;
-    [ObservableProperty] private object _value;
+    
+    private object _value = 0;
+    public object Value
+    {
+        get => _value;
+        set
+        {
+            if (SetProperty(ref _value, value))
+            {
+                OnPropertyChanged(nameof(EffectiveDisplayValue));
+
+                if (IsStatic)
+                {
+                    object val = value;
+                    if (value is string str)
+                    {
+                        if (double.TryParse(str, out double d)) val = d;
+                        else if (bool.TryParse(str, out bool b)) val = b;
+                    }
+                    string disp = val.ToString() ?? "";
+                    if (val is double dv) disp = dv.ToString("F2");
+                    
+                    _store.SetValue(DeviceId, Key, val, PointSource.Manual, disp);
+                }
+            }
+        }
+    }
     [ObservableProperty] private string? _displayValue;
+    [ObservableProperty] private string? _overrideStatus;
     [ObservableProperty] private string _source; 
     [ObservableProperty] private DateTime _lastUpdated;
     [ObservableProperty] private ushort _address;
@@ -261,10 +288,7 @@ public partial class PointViewModel : ObservableObject
         }
     }
 
-    partial void OnValueChanged(object value)
-    {
-        OnPropertyChanged(nameof(EffectiveDisplayValue));
-    }
+
 
     partial void OnGenTypeChanged(string value)
     {
@@ -310,37 +334,29 @@ public partial class PointViewModel : ObservableObject
 
     public void Update(PointValue val)
     {
-        if (!object.Equals(Value, val.Value)) Value = val.Value;
+        if (!object.Equals(_value, val.Value))
+        {
+            _value = val.Value;
+            OnPropertyChanged(nameof(Value));
+        }
         DisplayValue = val.DisplayValue;
+        OverrideStatus = val.OverrideStatus;
         Source = val.Source.ToString();
         LastUpdated = val.LastUpdated;
     }
 
-    [RelayCommand]
-    public async Task SetValue(object? input)
-    {
-        await CommitConfigAsync(); // Save properties
-        
-        // 2. Set Value ONLY if Static
-        if (IsStatic && input != null)
-        {
-            object val = input;
-            if (input is string str)
-            {
-                if (double.TryParse(str, out double d)) val = d;
-                else if (bool.TryParse(str, out bool b)) val = b;
-            }
-            
-            // Generate display value string to prevent UI blanking
-            string disp = val.ToString() ?? "";
-            if (val is double dv) disp = dv.ToString("F2");
-            
-             _store.SetValue(DeviceId, Key, val, PointSource.Manual, disp);
-        }
-    }
-
     public Task CommitConfigAsync()
     {
+        // Cancel override holds if the user manual tweaks the GenType
+        if (_def.OverrideCts != null && _def.Generator?.Type != GenType)
+        {
+            _def.OverrideCts.Cancel();
+            _def.OverrideCts.Dispose();
+            _def.OverrideCts = null;
+            _def.OriginalGeneratorType = null;
+            _store.UpdateOverrideStatus(DeviceId, Key, null);
+        }
+
         // 1. Update Config (Config is bound TwoWay, so mostly already updated, but we ensure persistence)
         if (_def.Type != Type) { _def.Type = Type; }
         

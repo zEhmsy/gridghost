@@ -42,7 +42,7 @@
 
                                 <DataGrid ItemsSource="{Binding Points}" AutoGenerateColumns="False" IsReadOnly="True" CanUserResizeColumns="True" MaxHeight="600">
                                     <DataGrid.Columns>
-                                        <DataGridTextColumn Header="Key" Binding="{Binding Key}" IsReadOnly="True" Width="180"/>
+                                        <DataGridTextColumn Header="Key" Binding="{Binding Key}" IsReadOnly="True" Width="*" MinWidth="180"/>
                                         <DataGridTemplateColumn Header="Type" Width="100">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
@@ -58,9 +58,13 @@
                                                 <DataTemplate>
                                                     <StackPanel>
                                                         <Grid ColumnDefinitions="*, Auto">
-                                                            <ComboBox Grid.Column="0" ItemsSource="{Binding AvailableGenTypes}" SelectedItem="{Binding GenType, Mode=TwoWay}" 
-                                                                      IsEnabled="{Binding IsEditingAllowed}"
-                                                                      HorizontalAlignment="Stretch" BorderThickness="0" Background="Transparent"/>
+                                                            <StackPanel Grid.Column="0">
+                                                                <ComboBox ItemsSource="{Binding AvailableGenTypes}" SelectedItem="{Binding GenType, Mode=TwoWay}" 
+                                                                          IsEnabled="{Binding IsEditingAllowed}"
+                                                                          HorizontalAlignment="Stretch" BorderThickness="0" Background="Transparent"/>
+                                                                <TextBlock Text="{Binding OverrideStatus}" IsVisible="{Binding OverrideStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" 
+                                                                           Foreground="{StaticResource WarningMain}" FontSize="11" FontStyle="Italic" Margin="5,0,0,0"/>
+                                                            </StackPanel>
                                                             <ToggleButton Grid.Column="1" Content="⚙️" IsChecked="{Binding IsSettingsOpen}"
                                                                           IsVisible="{Binding !IsStatic}" Background="Transparent" Padding="5,0"/>
                                                         </Grid>
@@ -88,32 +92,20 @@
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
 
-                                        <DataGridTemplateColumn Header="Value" Width="*">
+                                        <DataGridTemplateColumn Header="Value" Width="200" MaxWidth="300">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <DockPanel>
-                                                        <Button DockPanel.Dock="Right" Content="Set" Command="{Binding SetValueCommand}" 
-                                                                Classes="Accent" Padding="10,2" Margin="5,0,0,0"
-                                                                IsEnabled="{Binding IsEditingAllowed}"
-                                                                IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='!bool', FallbackValue=True}"/>
+                                                    <Panel Margin="5,0">
+                                                        <TextBox Name="ValInput" Text="{Binding Value, Mode=TwoWay}" 
+                                                                 IsEnabled="{Binding IsEditingAllowed}"
+                                                                 IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='!bool'}"
+                                                                 VerticalAlignment="Center"/>
                                                         
-                                                        <Button DockPanel.Dock="Right" Content="Set" Command="{Binding SetValueCommand}" 
-                                                                Classes="Accent" Padding="10,2" Margin="5,0,0,0"
-                                                                IsEnabled="{Binding IsEditingAllowed}"
-                                                                IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='bool', FallbackValue=False}"/>
-
-                                                        <Panel>
-                                                            <TextBox Name="ValInput" Text="{Binding Value, Mode=OneWay}" MinWidth="80"
-                                                                     IsEnabled="{Binding IsEditingAllowed}"
-                                                                     IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='!bool'}"/>
-                                                            
-                                                            <CheckBox IsChecked="{Binding Value, Mode=OneWay}" 
-                                                                      Command="{Binding SetValueCommand}"
-                                                                      CommandParameter="{Binding $self.IsChecked}"
-                                                                      IsEnabled="{Binding IsEditingAllowed}"
-                                                                      IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='bool'}"/>
-                                                        </Panel>
-                                                    </DockPanel>
+                                                        <CheckBox IsChecked="{Binding Value, Mode=TwoWay}" 
+                                                                  IsEnabled="{Binding IsEditingAllowed}"
+                                                                  IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='bool'}"
+                                                                  VerticalAlignment="Center"/>
+                                                    </Panel>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
