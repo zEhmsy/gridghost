@@ -30,6 +30,24 @@ public partial class PointsViewModel : ViewModelBase, IChangeTracker
     [ObservableProperty]
     private bool _isDirty;
 
+    // Per-device dirty tracking — only config-field edits set this
+    private readonly System.Collections.Generic.HashSet<string> _dirtyDeviceIds = new();
+
+    // Properties that originate from simulation/store updates — must NOT set dirty
+    private static readonly System.Collections.Generic.HashSet<string> _nonDirtyProps = new()
+    {
+        nameof(PointViewModel.Value),
+        nameof(PointViewModel.StringValue),
+        nameof(PointViewModel.BoolValue),
+        nameof(PointViewModel.DisplayValue),
+        nameof(PointViewModel.EffectiveDisplayValue),
+        nameof(PointViewModel.LastUpdated),
+        nameof(PointViewModel.Source),
+        nameof(PointViewModel.OverrideStatus),
+        nameof(PointViewModel.IsEditingAllowed), // set by device start/stop
+        nameof(PointViewModel.IsSettingsOpen),   // UI-only toggle
+    };
+
     public PointsViewModel(IPointStore pointStore, DeviceManager deviceManager)
     {
         _pointStore = pointStore;
@@ -75,21 +93,22 @@ public partial class PointsViewModel : ViewModelBase, IChangeTracker
                 }
             }
         }
+        _dirtyDeviceIds.Clear();
         IsDirty = false;
     }
 
     private void PointViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        // Don't mark dirty for standard real-time value updates coming from the backend simulation
-        if (e.PropertyName != nameof(PointViewModel.Value) && 
-            e.PropertyName != nameof(PointViewModel.DisplayValue) &&
-            e.PropertyName != nameof(PointViewModel.EffectiveDisplayValue) &&
-            e.PropertyName != nameof(PointViewModel.LastUpdated) &&
-            e.PropertyName != nameof(PointViewModel.Source))
+        if (e.PropertyName == null || _nonDirtyProps.Contains(e.PropertyName)) return;
+
+        if (sender is PointViewModel pvm)
         {
-            IsDirty = true;
+            _dirtyDeviceIds.Add(pvm.DeviceId);
         }
+        IsDirty = _dirtyDeviceIds.Count > 0;
     }
+
+    public bool IsDeviceDirty(string deviceId) => _dirtyDeviceIds.Contains(deviceId);
 
     private void OnDeviceRemoved(string deviceId)
     {
@@ -171,12 +190,14 @@ public partial class PointsViewModel : ViewModelBase, IChangeTracker
             await p.CommitConfigAsync();
         }
         _deviceManager.SaveAll();
+        _dirtyDeviceIds.Clear();
         IsDirty = false;
         return true;
     }
 
     public void DiscardChanges()
     {
+        _dirtyDeviceIds.Clear();
         IsDirty = false;
         RefreshPoints();
     }
@@ -449,14 +470,9 @@ public partial class DevicePointsGroupViewModel : ObservableObject
     [RelayCommand]
     public async Task Toggle()
     {
-        if (_instance.State == DeviceInstance.DeviceState.Running)
-        {
-            await _deviceManager.StopDeviceAsync(_instance.Id);
-        }
-        else
-        {
-            await _deviceManager.StartDeviceAsync(_instance.Id);
-        }
+        bool isRunning = _instance.State == DeviceInstance.DeviceState.Running;
+        WeakReferenceMessenger.Default.Send(new RequestToggleDeviceMessage(_instance.Id, _instance.Name, isRunning));
         UpdateFromModel();
+        await Task.CompletedTask;
     }
 }

@@ -9,12 +9,14 @@ namespace DeviceSim.App.ViewModels;
 public record NavigationMessage(string ViewName);
 public record SelectDeviceMessage(string? DeviceId);
 public record ShowErrorDialogMessage(string Title, string Message);
+public record RequestToggleDeviceMessage(string DeviceId, string DeviceName, bool IsCurrentlyRunning);
 
 public partial class MainViewModel : ViewModelBase
 {
     private ViewModelBase _currentView;
 
     private readonly DeviceSim.Core.Services.ConfigurationService _configService;
+    private DeviceSim.Core.Services.DeviceManager _deviceManager;
 
     public ViewModelBase DevicesView { get; }
     public PointsViewModel PointsView { get; }
@@ -69,6 +71,7 @@ public partial class MainViewModel : ViewModelBase
         NavigateCommand = new RelayCommand<string>(Navigate);
         
         deviceManager.OnError += ShowError;
+        _deviceManager = deviceManager;
         
         WeakReferenceMessenger.Default.Register<NavigationMessage>(this, (r, m) =>
         {
@@ -78,6 +81,11 @@ public partial class MainViewModel : ViewModelBase
         WeakReferenceMessenger.Default.Register<ShowErrorDialogMessage>(this, (r, m) =>
         {
             ShowError(m.Title, m.Message);
+        });
+
+        WeakReferenceMessenger.Default.Register<RequestToggleDeviceMessage>(this, (r, m) =>
+        {
+            HandleToggleDeviceRequest(m);
         });
     }
 
@@ -127,6 +135,64 @@ public partial class MainViewModel : ViewModelBase
     }
 
     private string? _targetViewName;
+
+    // --------- Enable Gate Modal ---------
+    private string? _pendingEnableDeviceId;
+
+    [ObservableProperty] private bool _isEnableGateVisible;
+    [ObservableProperty] private string _enableGateDeviceName = string.Empty;
+
+    private void HandleToggleDeviceRequest(RequestToggleDeviceMessage m)
+    {
+        Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
+        {
+            if (m.IsCurrentlyRunning)
+            {
+                // Stop: no dirty check needed
+                await _deviceManager.StopDeviceAsync(m.DeviceId);
+                return;
+            }
+
+            // Start: check if this device has unsaved config edits
+            if (PointsView.IsDeviceDirty(m.DeviceId))
+            {
+                _pendingEnableDeviceId = m.DeviceId;
+                EnableGateDeviceName = m.DeviceName;
+                IsEnableGateVisible = true;
+            }
+            else
+            {
+                await _deviceManager.StartDeviceAsync(m.DeviceId);
+            }
+        });
+    }
+
+    [RelayCommand]
+    public async Task EnableGateSaveAndStartAsync()
+    {
+        IsEnableGateVisible = false;
+        var success = await PointsView.SaveChangesAsync();
+        if (success && _pendingEnableDeviceId != null)
+            await _deviceManager.StartDeviceAsync(_pendingEnableDeviceId);
+        _pendingEnableDeviceId = null;
+    }
+
+    [RelayCommand]
+    public async Task EnableGateDiscardAndStartAsync()
+    {
+        IsEnableGateVisible = false;
+        PointsView.DiscardChanges();
+        if (_pendingEnableDeviceId != null)
+            await _deviceManager.StartDeviceAsync(_pendingEnableDeviceId);
+        _pendingEnableDeviceId = null;
+    }
+
+    [RelayCommand]
+    public void EnableGateCancel()
+    {
+        IsEnableGateVisible = false;
+        _pendingEnableDeviceId = null;
+    }
 
     [ObservableProperty]
     private bool _isConfirmNavigateVisible;

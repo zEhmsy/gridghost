@@ -126,6 +126,27 @@
             </Border>
         </Border>
 
+        <!-- Enable Gate Overlay: shown when enabling a device with unsaved config -->
+        <Border Grid.Column="0" Grid.ColumnSpan="2" Background="#cc000000" IsVisible="{Binding IsEnableGateVisible}" ZIndex="150">
+            <Border Background="{StaticResource PanelBackground}" Width="420" MaxHeight="260" CornerRadius="14"
+                    BorderBrush="{StaticResource AccentColor}" BorderThickness="1"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" Padding="30">
+                <StackPanel VerticalAlignment="Center" Spacing="20">
+                    <TextBlock Text="Unsaved Changes" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Center"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondary}" TextAlignment="Center">
+                        <Run Text="Save changes before enabling "/>
+                        <Run Text="{Binding EnableGateDeviceName}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
+                        <Run Text="?"/>
+                    </TextBlock>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                        <Button Content="Save &amp; Enable" Command="{Binding EnableGateSaveAndStartCommand}" Classes="Accent" Width="120" HorizontalContentAlignment="Center"/>
+                        <Button Content="Discard &amp; Enable" Command="{Binding EnableGateDiscardAndStartCommand}" Classes="Danger" Width="130" HorizontalContentAlignment="Center"/>
+                        <Button Content="Cancel" Command="{Binding EnableGateCancelCommand}" Width="80" HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Border>
+
         <!-- Error Dialog Overlay -->
         <Border Grid.Column="0" Grid.ColumnSpan="2" Background="#cc000000" IsVisible="{Binding IsErrorDialogVisible}" ZIndex="200">
             <Border Background="{StaticResource PanelBackground}" Width="450" MinHeight="180" CornerRadius="14" 
