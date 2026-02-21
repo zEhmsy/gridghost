@@ -17,10 +17,24 @@
             <TextBlock Text="Unsaved changes" IsVisible="{Binding IsDirty}" Foreground="#ffaa00" VerticalAlignment="Center" Margin="5,0,0,0" FontStyle="Italic"/>
         </StackPanel>
 
-        <DataGrid ItemsSource="{Binding Points}" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="Gray" CanUserResizeColumns="True">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Device" Binding="{Binding DeviceName}" IsReadOnly="True" Width="150"/>
-                <DataGridTextColumn Header="Key" Binding="{Binding Key}" IsReadOnly="True" Width="150"/>
+        <ScrollViewer HorizontalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding DeviceGroups}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Expander IsExpanded="{Binding IsExpanded, Mode=TwoWay}" Margin="0,5,0,5" HorizontalAlignment="Stretch">
+                            <Expander.Header>
+                                <StackPanel Orientation="Horizontal" Spacing="15" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding DeviceName}" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Port, StringFormat='Port: {0}'}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Status, StringFormat='Status: {0}'}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Running/Enabled:" VerticalAlignment="Center"/>
+                                    <CheckBox IsChecked="{Binding Enabled, Mode=OneWay}" Command="{Binding ToggleCommand}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Expander.Header>
+
+                            <DataGrid ItemsSource="{Binding Points}" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="Gray" CanUserResizeColumns="True" MaxHeight="600">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Key" Binding="{Binding Key}" IsReadOnly="True" Width="150"/>
                 <DataGridTemplateColumn Header="Type" Width="100">
                      <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -100,7 +114,12 @@
 
                 <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="100"/>
                 <DataGridTextColumn Header="Last Updated" Binding="{Binding LastUpdated}" Width="150"/>
-            </DataGrid.Columns>
-        </DataGrid>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Expander>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
     </DockPanel>
 </UserControl>

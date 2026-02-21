@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 namespace DeviceSim.App.ViewModels;
 
 public record NavigationMessage(string ViewName);
+public record SelectDeviceMessage(string? DeviceId);
+public record ShowErrorDialogMessage(string Title, string Message);
 
 public partial class MainViewModel : ViewModelBase
 {
@@ -50,6 +52,11 @@ public partial class MainViewModel : ViewModelBase
         WeakReferenceMessenger.Default.Register<NavigationMessage>(this, (r, m) =>
         {
             Navigate(m.ViewName);
+        });
+        
+        WeakReferenceMessenger.Default.Register<ShowErrorDialogMessage>(this, (r, m) =>
+        {
+            ShowError(m.Title, m.Message);
         });
     }
 

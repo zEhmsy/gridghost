@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using DeviceSim.Core.Interfaces;
 using DeviceSim.Core.Models;
 using DeviceSim.Core.Services;
@@ -17,6 +18,11 @@ public partial class PointsViewModel : ViewModelBase, IChangeTracker
     private readonly DeviceManager _deviceManager;
 
     public ObservableCollection<PointViewModel> Points { get; } = new();
+
+    public ObservableCollection<DevicePointsGroupViewModel> DeviceGroups { get; } = new();
+
+    [ObservableProperty]
+    private string? _selectedDeviceId;
 
     [ObservableProperty]
     private string _filterText = "";
@@ -32,15 +38,32 @@ public partial class PointsViewModel : ViewModelBase, IChangeTracker
         _deviceManager.OnDeviceUpdated += OnDeviceUpdated;
         _deviceManager.OnDeviceRemoved += OnDeviceRemoved;
         
+        WeakReferenceMessenger.Default.Register<SelectDeviceMessage>(this, (r, m) =>
+        {
+            SelectedDeviceId = m.DeviceId;
+            if (m.DeviceId != null)
+            {
+                foreach (var g in DeviceGroups)
+                {
+                    g.IsExpanded = (g.DeviceId == m.DeviceId);
+                }
+            }
+        });
+
         RefreshPoints();
     }
 
     private void RefreshPoints()
     {
         Points.Clear();
+        DeviceGroups.Clear();
         var devices = _deviceManager.GetAll().ToList();
         foreach (var device in devices)
         {
+            var group = new DevicePointsGroupViewModel(device, _deviceManager);
+            if (SelectedDeviceId == device.Id) group.IsExpanded = true;
+            DeviceGroups.Add(group);
+
             foreach (var pointDef in device.Points)
             {
                 if (_pointStore.TryGetValue(device.Id, pointDef.Key, out var val))
@@ -48,6 +71,7 @@ public partial class PointsViewModel : ViewModelBase, IChangeTracker
                     var vm = new PointViewModel(device, pointDef, val, _pointStore, _deviceManager);
                     vm.PropertyChanged += PointViewModel_PropertyChanged;
                     Points.Add(vm);
+                    group.Points.Add(vm);
                 }
             }
         }
@@ -70,6 +94,9 @@ public partial class PointsViewModel : ViewModelBase, IChangeTracker
     private void OnDeviceRemoved(string deviceId)
     {
         Dispatcher.UIThread.Post(() => {
+            var g = DeviceGroups.FirstOrDefault(x => x.DeviceId == deviceId);
+            if (g != null) DeviceGroups.Remove(g);
+
             var toRemove = Points.Where(p => p.DeviceId == deviceId).ToList();
             foreach (var p in toRemove) Points.Remove(p);
         });
@@ -78,12 +105,39 @@ public partial class PointsViewModel : ViewModelBase, IChangeTracker
     private void OnDeviceUpdated(DeviceInstance instance)
     {
         Dispatcher.UIThread.Post(() => {
-            // Update IsEditingAllowed for the points of this device instead of full refresh
-            // to avoid losing unsaved user edits.
-            bool isAllowed = instance.State != DeviceInstance.DeviceState.Running;
-            foreach (var p in Points.Where(pt => pt.DeviceId == instance.Id))
+            var group = DeviceGroups.FirstOrDefault(x => x.DeviceId == instance.Id);
+            if (group != null) group.UpdateFromModel();
+
+            // Check if device points are already loaded
+            var existingPoints = Points.Where(pt => pt.DeviceId == instance.Id).ToList();
+            if (existingPoints.Count == 0 && instance.Points.Count > 0)
             {
-                p.IsEditingAllowed = isAllowed;
+                if (group == null)
+                {
+                    group = new DevicePointsGroupViewModel(instance, _deviceManager);
+                    DeviceGroups.Add(group);
+                }
+
+                System.Diagnostics.Debug.WriteLine($"[PointsViewModel] Adding {instance.Points.Count} points for NEW device {instance.Id}");
+                foreach (var pointDef in instance.Points)
+                {
+                    if (_pointStore.TryGetValue(instance.Id, pointDef.Key, out var val))
+                    {
+                        var vm = new PointViewModel(instance, pointDef, val, _pointStore, _deviceManager);
+                        vm.PropertyChanged += PointViewModel_PropertyChanged;
+                        Points.Add(vm);
+                        group.Points.Add(vm);
+                    }
+                }
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"[PointsViewModel] Updating editing state for {existingPoints.Count} points of device {instance.Id}");
+                bool isAllowed = instance.State != DeviceInstance.DeviceState.Running;
+                foreach (var p in existingPoints)
+                {
+                    p.IsEditingAllowed = isAllowed;
+                }
             }
         });
     }
@@ -295,5 +349,50 @@ public partial class PointViewModel : ObservableObject
         if (Math.Abs(_def.Generator.PeriodSeconds - GenPeriod) > 0.001) { _def.Generator.PeriodSeconds = GenPeriod; }
 
         return Task.CompletedTask;
+    }
+}
+
+public partial class DevicePointsGroupViewModel : ObservableObject
+{
+    private readonly DeviceManager _deviceManager;
+    private readonly DeviceInstance _instance;
+
+    public string DeviceId => _instance.Id;
+    public string DeviceName => _instance.Name;
+    [ObservableProperty] private int _port;
+
+    [ObservableProperty] private string _status;
+    [ObservableProperty] private bool _enabled;
+    [ObservableProperty] private bool _isExpanded;
+
+    public ObservableCollection<PointViewModel> Points { get; } = new();
+
+    public DevicePointsGroupViewModel(DeviceInstance instance, DeviceManager deviceManager)
+    {
+        _instance = instance;
+        _deviceManager = deviceManager;
+        UpdateFromModel();
+        IsExpanded = false;
+    }
+
+    public void UpdateFromModel()
+    {
+        Status = _instance.State.ToString();
+        Enabled = _instance.Enabled;
+        Port = _instance.Network.Port;
+    }
+
+    [RelayCommand]
+    public async Task Toggle()
+    {
+        if (_instance.State == DeviceInstance.DeviceState.Running)
+        {
+            await _deviceManager.StopDeviceAsync(_instance.Id);
+        }
+        else
+        {
+            await _deviceManager.StartDeviceAsync(_instance.Id);
+        }
+        UpdateFromModel();
     }
 }

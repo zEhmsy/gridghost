@@ -59,6 +59,7 @@ public class DeviceManager
 
     public void AddInstance(DeviceInstance instance)
     {
+        System.Diagnostics.Debug.WriteLine($"[DeviceManager] AddInstance called for device {instance.Id} ({instance.Name})");
         _instances[instance.Id] = instance;
         _pointStore.InitializePoints(instance.Id, instance.Points);
         _configService.Save(_instances.Values);

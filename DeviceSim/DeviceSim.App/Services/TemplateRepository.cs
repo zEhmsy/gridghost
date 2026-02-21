@@ -95,25 +95,22 @@ public class TemplateRepository
     
     public async Task<DeviceTemplate?> ImportAsync(string sourcePath)
     {
-        if (!File.Exists(sourcePath)) return null;
+        if (!File.Exists(sourcePath)) throw new FileNotFoundException("File not found.", sourcePath);
         
-        try 
+        var json = await File.ReadAllTextAsync(sourcePath);
+        var options = new JsonSerializerOptions 
+        { 
+            PropertyNameCaseInsensitive = true,
+            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() },
+            AllowTrailingCommas = true,
+            ReadCommentHandling = JsonCommentHandling.Skip
+        };
+        var template = JsonSerializer.Deserialize<DeviceTemplate>(json, options);
+        
+        if (template == null)
         {
-             var json = await File.ReadAllTextAsync(sourcePath);
-             var template = JsonSerializer.Deserialize<DeviceTemplate>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-             
-             if (template != null)
-             {
-                 // Check if ID exists, maybe generate new ID if needed?
-                 // For now, we keep original ID but user can change it in editor before saving if they want.
-                 // Actually, if we import, we should probably just return the object and let the UI decide when to save.
-                 return template;
-             }
+            throw new InvalidOperationException("Failed to decode template from JSON.");
         }
-        catch(Exception ex)
-        {
-            Console.WriteLine($"Import failed: {ex.Message}");
-        }
-        return null;
+        return template;
     }
 }

@@ -162,7 +162,9 @@ public partial class TemplatesViewModel : ViewModelBase, IChangeTracker
         // Best to use what is in file to match "Use existing template" behavior.
         
         var instance = DeviceInstance.FromTemplate(SelectedTemplate);
+        System.Diagnostics.Debug.WriteLine($"[TemplatesViewModel] Creating instance {instance.Id}");
         _deviceManager.AddInstance(instance);
+        System.Diagnostics.Debug.WriteLine($"[TemplatesViewModel] Total templates after create: {Templates.Count}");
         
         // Auto-navigate to Points view to monitor newly created device
         WeakReferenceMessenger.Default.Send(new NavigationMessage("Points"));
@@ -207,15 +209,24 @@ public partial class TemplatesViewModel : ViewModelBase, IChangeTracker
              {
                  var file = files[0];
                  var path = file.Path.LocalPath;
-                 var template = await _repository.ImportAsync(path);
-                 if (template != null)
+                 try
                  {
-                     // Ensure unique ID?
-                     template.Id = Guid.NewGuid().ToString();
-                     template.Name += " (Imported)";
-                     await _repository.SaveAsync(template);
-                     Templates.Add(template);
-                     SelectedTemplate = template;
+                     var template = await _repository.ImportAsync(path);
+                     if (template != null)
+                     {
+                         // Ensure unique ID?
+                         template.Id = Guid.NewGuid().ToString();
+                         template.Name += " (Imported)";
+                         await _repository.SaveAsync(template);
+                         Templates.Add(template);
+                         SelectedTemplate = template;
+                         Console.WriteLine($"[TemplatesViewModel] Imported new template {template.Id}, count: {Templates.Count}");
+                     }
+                 }
+                 catch (Exception ex)
+                 {
+                     System.Diagnostics.Debug.WriteLine($"[TemplatesViewModel] Import exception caught: {ex.Message}");
+                     WeakReferenceMessenger.Default.Send(new ShowErrorDialogMessage("Import Failed", $"Failed to import template. The file may be corrupt or incorrectly formatted.\n\nError: {ex.Message}"));
                  }
              }
          }

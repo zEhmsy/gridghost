@@ -9,10 +9,15 @@
     <DockPanel Margin="20">
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
             <TextBlock Text="Modbus Point Map" FontSize="24" FontWeight="Bold"/>
-            <Button Content="Refresh" Command="{Binding RefreshCommand}" />
+            <Button Content="Refresh" Command="{Binding RefreshCommand}" IsVisible="{Binding IsDeviceSelected}"/>
         </StackPanel>
         
-        <DataGrid ItemsSource="{Binding Points}" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="Gray">
+        <TextBlock DockPanel.Dock="Top" Text="Select a device from the Devices view to load its Point Map." 
+                   IsVisible="{Binding IsNoDeviceSelected}" 
+                   FontSize="18" Foreground="Gray" HorizontalAlignment="Center" Margin="20"/>
+
+        <DataGrid ItemsSource="{Binding Points}" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="Gray"
+                  IsVisible="{Binding IsDeviceSelected}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Device" Binding="{Binding DeviceName}" Width="150" />
                 <DataGridTextColumn Header="Point Key" Binding="{Binding Key}" Width="150" />

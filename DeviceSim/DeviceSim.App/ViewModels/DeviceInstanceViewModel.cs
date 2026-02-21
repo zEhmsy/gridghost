@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using DeviceSim.Core.Models;
 using DeviceSim.Core.Services;
 
@@ -95,6 +96,20 @@ public partial class DeviceInstanceViewModel : ViewModelBase
         }
         
         UpdateFromModel();
+    }
+
+    [RelayCommand]
+    public void OpenPoints()
+    {
+        WeakReferenceMessenger.Default.Send(new SelectDeviceMessage(Id));
+        WeakReferenceMessenger.Default.Send(new NavigationMessage("Points"));
+    }
+
+    [RelayCommand]
+    public void OpenPointMap()
+    {
+        WeakReferenceMessenger.Default.Send(new SelectDeviceMessage(Id));
+        WeakReferenceMessenger.Default.Send(new NavigationMessage("PointMap"));
     }
 
     [RelayCommand]

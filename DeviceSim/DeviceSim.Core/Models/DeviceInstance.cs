@@ -58,6 +58,7 @@ public class DeviceInstance
                 NiagaraType = p.NiagaraType,
                 Unit = p.Unit,
                 Access = p.Access,
+                OverrideMode = p.OverrideMode,
                 Modbus = p.Modbus == null ? null : new ModbusPointConfig
                 {
                     Address = p.Modbus.Address,
