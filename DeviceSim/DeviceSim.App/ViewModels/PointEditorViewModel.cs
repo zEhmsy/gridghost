@@ -138,9 +138,20 @@ public partial class PointEditorViewModel : ObservableObject
         }
     }
 
+    public ExternalWriteOverrideMode OverrideMode
+    {
+        get => _point.OverrideMode;
+        set {
+            if (_point.OverrideMode != value) {
+                _point.OverrideMode = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     public static List<string> PointTypes { get; } = new() { "bool", "int16", "uint16", "float", "int32", "uint32" };
     public static List<string> ModbusKinds { get; } = new() { "Holding", "Input", "Coil", "Discrete" };
     public static List<AccessMode> AccessModes { get; } = Enum.GetValues<AccessMode>().ToList();
     public static List<string> GeneratorTypes { get; } = new() { "static", "ramp", "sine", "random" };
-
+    public static List<ExternalWriteOverrideMode> OverrideModes { get; } = Enum.GetValues<ExternalWriteOverrideMode>().ToList();
 }

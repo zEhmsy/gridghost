@@ -24,6 +24,7 @@ public class DeviceManager
 
     public event Action<DeviceInstance>? OnDeviceUpdated;
     public event Action<string>? OnDeviceRemoved;
+    public event Action<string, string>? OnError; // title, message
 
     public DeviceManager(IEnumerable<IProtocolAdapter> adapters, IPointStore pointStore, ILogSink logger, SimulationScheduler scheduler, ConfigurationService configService, TemplateRepository templateRepo)
     {
@@ -34,10 +35,10 @@ public class DeviceManager
         _configService = configService;
 
         // Load persisted devices
-        var saved = _configService.Load();
-        if (saved != null && saved.Any())
+        var config = _configService.Load();
+        if (config?.Devices != null && config.Devices.Any())
         {
-            foreach (var d in saved)
+            foreach (var d in config.Devices)
             {
                 _instances[d.Id] = d;
                 _pointStore.InitializePoints(d.Id, d.Points);
@@ -58,10 +59,16 @@ public class DeviceManager
 
     public void AddInstance(DeviceInstance instance)
     {
+        System.Diagnostics.Debug.WriteLine($"[DeviceManager] AddInstance called for device {instance.Id} ({instance.Name})");
         _instances[instance.Id] = instance;
         _pointStore.InitializePoints(instance.Id, instance.Points);
         _configService.Save(_instances.Values);
         OnDeviceUpdated?.Invoke(instance);
+    }
+
+    public void SaveAll()
+    {
+        _configService.Save(_instances.Values);
     }
 
     public async Task RemoveInstanceAsync(string id)
@@ -89,15 +96,29 @@ public class DeviceManager
         {
             if (_runningDevices.ContainsKey(id)) return; // Already running
 
-            // Check Port
-            if (IsPortInUse(instance.Network.Port))
+            // Enforce strictly one running device per port globally across instances
+            if (_instances.Values.Any(d => d.Id != id && d.Network.Port == instance.Network.Port && d.State == DeviceInstance.DeviceState.Running))
             {
-                var msg = $"Port {instance.Network.Port} is already in use.";
+                var msg = $"Port {instance.Network.Port} is already bound by another running device.";
                 _logger.Log("Error", msg, id);
                 instance.State = DeviceInstance.DeviceState.Faulted;
                 instance.LastError = msg;
                 instance.Enabled = false; // Force disable
                 OnDeviceUpdated?.Invoke(instance);
+                OnError?.Invoke("Port Collision", msg);
+                return;
+            }
+
+            // Check system port
+            if (IsPortInUse(instance.Network.Port))
+            {
+                var msg = $"Port {instance.Network.Port} is bound by another application on the host.";
+                _logger.Log("Error", msg, id);
+                instance.State = DeviceInstance.DeviceState.Faulted;
+                instance.LastError = msg;
+                instance.Enabled = false; // Force disable
+                OnDeviceUpdated?.Invoke(instance);
+                OnError?.Invoke("Port In Use", msg);
                 return;
             }
 

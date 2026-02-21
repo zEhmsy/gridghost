@@ -6,23 +6,35 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="DeviceSim.App.Views.PointMapView"
              x:DataType="vm:PointMapViewModel">
-    <DockPanel Margin="20">
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
-            <TextBlock Text="Modbus Point Map" FontSize="24" FontWeight="Bold"/>
-            <Button Content="Refresh" Command="{Binding RefreshCommand}" />
-        </StackPanel>
-        
-        <DataGrid ItemsSource="{Binding Points}" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="Gray">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Device" Binding="{Binding DeviceName}" Width="150" />
-                <DataGridTextColumn Header="Point Key" Binding="{Binding Key}" Width="150" />
-                <DataGridTextColumn Header="Modbus Address" Binding="{Binding ModbusAddress}" Foreground="Cyan" FontWeight="Bold" Width="120" />
-                <DataGridTextColumn Header="Niagara Type" Binding="{Binding FormattedNiagaraType}" Width="100" />
-                <DataGridTextColumn Header="Data Type" Binding="{Binding Type}" Width="100" />
-                <DataGridTextColumn Header="Scale" Binding="{Binding Scale}" Width="60" />
-                <DataGridTextColumn Header="Bit/Length" Binding="{Binding BitLengthString}" Width="80" />
-                <DataGridTextColumn Header="Value" Binding="{Binding EffectiveDisplayValue}" Width="*" />
-            </DataGrid.Columns>
-        </DataGrid>
-    </DockPanel>
+    <Border Classes="MainPanel">
+        <DockPanel>
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="15" Margin="0,0,0,20">
+                <TextBlock Text="Modbus Point Map" FontSize="22" FontWeight="SemiBold"/>
+                <Button Content="Refresh Map" Command="{Binding RefreshCommand}" IsVisible="{Binding IsDeviceSelected}" Padding="15,6"/>
+            </StackPanel>
+            
+            <Panel>
+                <StackPanel IsVisible="{Binding IsNoDeviceSelected}" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="15">
+                    <Path Data="M19,19H5V5H19V19M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M16.5,16.25L13,12.75V8H11V13.25L15,17.25L16.5,16.25Z" 
+                          Fill="{StaticResource TextMuted}" Width="48" Height="48" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Select a device from the Devices view to load its Point Map." 
+                               FontSize="18" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <DataGrid ItemsSource="{Binding Points}" AutoGenerateColumns="False" IsReadOnly="True"
+                          IsVisible="{Binding IsDeviceSelected}" CanUserResizeColumns="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Device" Binding="{Binding DeviceName}" Width="150" />
+                        <DataGridTextColumn Header="Point Key" Binding="{Binding Key}" Width="180" />
+                        <DataGridTextColumn Header="Modbus Address" Binding="{Binding ModbusAddress}" Foreground="{StaticResource AccentMain}" FontWeight="Bold" Width="130" />
+                        <DataGridTextColumn Header="Niagara Type" Binding="{Binding FormattedNiagaraType}" Width="120" />
+                        <DataGridTextColumn Header="Data Type" Binding="{Binding Type}" Width="100" />
+                        <DataGridTextColumn Header="Scale" Binding="{Binding Scale}" Width="70" />
+                        <DataGridTextColumn Header="Bit/Length" Binding="{Binding BitLengthString}" Width="100" />
+                        <DataGridTextColumn Header="Value" Binding="{Binding EffectiveDisplayValue}" Width="*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Panel>
+        </DockPanel>
+    </Border>
 </UserControl>

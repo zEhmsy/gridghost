@@ -4,31 +4,44 @@
              x:Class="DeviceSim.App.Views.DevicesView"
              x:DataType="vm:DevicesViewModel">
 
-    <DockPanel>
-        <TextBlock Text="Devices Instance Manager" DockPanel.Dock="Top" FontSize="20" FontWeight="Bold" Margin="0,0,0,10"/>
-        
-        <DataGrid ItemsSource="{Binding Devices}" AutoGenerateColumns="False" GridLinesVisibility="All" BorderThickness="1" BorderBrush="Gray">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Name" Binding="{Binding Name}" IsReadOnly="True" Width="*"/>
-                <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" IsReadOnly="True" Width="100"/>
-                <DataGridTextColumn Header="Port" Binding="{Binding Port, Mode=TwoWay}" Width="80"/>
-                <DataGridTextColumn Header="Status" Binding="{Binding Status}" IsReadOnly="True" Width="100"/>
-                <DataGridTemplateColumn Header="Enabled" Width="100" IsReadOnly="True">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <CheckBox IsChecked="{Binding Enabled, Mode=OneWay}" Command="{Binding ToggleCommand}" HorizontalAlignment="Center"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Last Error" Binding="{Binding LastError}" IsReadOnly="True" Width="200"/>
-                <DataGridTemplateColumn Header="Actions" Width="100">
-                     <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Button Content="Remove" Command="{Binding $parent[UserControl].((vm:DevicesViewModel)DataContext).RemoveCommand}" CommandParameter="{Binding}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
-    </DockPanel>
+    <Border Classes="MainPanel">
+        <DockPanel>
+            <TextBlock Text="Devices Instance Manager" DockPanel.Dock="Top" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,20"/>
+            
+            <DataGrid ItemsSource="{Binding Devices}" AutoGenerateColumns="False" CanUserResizeColumns="True">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Name" Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="10,0">
+                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontWeight="Medium"/>
+                                    <Button Content="✏️" ToolTip.Tip="Edit points" Command="{Binding OpenPointsCommand}" Background="Transparent" BorderThickness="0" Padding="4"/>
+                                    <Button Content="🗺️" ToolTip.Tip="Open Niagara map" Command="{Binding OpenPointMapCommand}" Background="Transparent" BorderThickness="0" Padding="4"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" IsReadOnly="True" Width="100"/>
+                    <DataGridTextColumn Header="Port" Binding="{Binding Port, Mode=TwoWay}" Width="100"/>
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" IsReadOnly="True" Width="120"/>
+                    <DataGridTemplateColumn Header="Enabled" Width="100" IsReadOnly="True">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding Enabled, Mode=OneWay}" Command="{Binding ToggleCommand}" HorizontalAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Last Error" Binding="{Binding LastError}" IsReadOnly="True" Width="*"/>
+                    <DataGridTemplateColumn Header="Actions" Width="120">
+                         <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Remove" Classes="Danger" Padding="10,5"
+                                        Command="{Binding $parent[UserControl].((vm:DevicesViewModel)DataContext).RemoveCommand}" CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+    </Border>
 </UserControl>

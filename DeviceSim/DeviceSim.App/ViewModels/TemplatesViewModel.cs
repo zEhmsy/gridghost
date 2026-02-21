@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using DeviceSim.Core.Interfaces;
 using DeviceSim.Core.Models;
 using DeviceSim.Core.Services;
@@ -15,7 +16,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 
 namespace DeviceSim.App.ViewModels;
 
-public partial class TemplatesViewModel : ViewModelBase
+public partial class TemplatesViewModel : ViewModelBase, IChangeTracker
 {
     private readonly TemplateRepository _repository;
     private readonly DeviceManager _deviceManager; // To create instances
@@ -82,22 +83,52 @@ public partial class TemplatesViewModel : ViewModelBase
 
         var template = EditorViewModel.GetTemplate();
         
-        // Save to disk
-        await _repository.SaveAsync(template);
-
-        // Update list if new
-        if (!Templates.Any(t => t.Id == template.Id))
+        try
         {
-            Templates.Add(template);
-        }
-        else
-        {
-            // Refresh list item?
-            var index = Templates.IndexOf(Templates.First(t => t.Id == template.Id));
-            if (index >= 0) Templates[index] = template; 
-        }
+            // Save to disk
+            await _repository.SaveAsync(template);
 
-        SelectedTemplate = template;
+            // Update list if new
+            if (!Templates.Any(t => t.Id == template.Id))
+            {
+                Templates.Add(template);
+            }
+            else
+            {
+                // Refresh list item?
+                var index = Templates.IndexOf(Templates.First(t => t.Id == template.Id));
+                if (index >= 0) Templates[index] = template; 
+            }
+
+            SelectedTemplate = template;
+            EditorViewModel.ValidationErrors = "Template saved successfully.";
+            EditorViewModel.HasErrors = false;
+        }
+        catch (Exception ex)
+        {
+            EditorViewModel.ValidationErrors = $"Failed to save template: {ex.Message}";
+            EditorViewModel.HasErrors = true;
+        }
+    }
+
+    public bool IsDirty => EditorViewModel?.IsDirty ?? false;
+
+    public async Task<bool> SaveChangesAsync()
+    {
+        await SaveEditor();
+        return EditorViewModel == null || !EditorViewModel.HasErrors;
+    }
+
+    public void DiscardChanges()
+    {
+        if (EditorViewModel != null)
+        {
+            EditorViewModel.IsDirty = false;
+        }
+        // Force refresh from list to undo edits
+        var temp = SelectedTemplate;
+        SelectedTemplate = null;
+        SelectedTemplate = temp;
     }
 
     [RelayCommand]
@@ -131,9 +162,14 @@ public partial class TemplatesViewModel : ViewModelBase
         // Best to use what is in file to match "Use existing template" behavior.
         
         var instance = DeviceInstance.FromTemplate(SelectedTemplate);
+        System.Diagnostics.Debug.WriteLine($"[TemplatesViewModel] Creating instance {instance.Id}");
         _deviceManager.AddInstance(instance);
+        System.Diagnostics.Debug.WriteLine($"[TemplatesViewModel] Total templates after create: {Templates.Count}");
         
-        // Notify user? 
+        // Auto-navigate to Points view to monitor newly created device
+        WeakReferenceMessenger.Default.Send(new NavigationMessage("Points"));
+        WeakReferenceMessenger.Default.Send(new SelectDeviceMessage(instance.Id));
+        
         await Task.CompletedTask;
     }
 
@@ -174,15 +210,24 @@ public partial class TemplatesViewModel : ViewModelBase
              {
                  var file = files[0];
                  var path = file.Path.LocalPath;
-                 var template = await _repository.ImportAsync(path);
-                 if (template != null)
+                 try
                  {
-                     // Ensure unique ID?
-                     template.Id = Guid.NewGuid().ToString();
-                     template.Name += " (Imported)";
-                     await _repository.SaveAsync(template);
-                     Templates.Add(template);
-                     SelectedTemplate = template;
+                     var template = await _repository.ImportAsync(path);
+                     if (template != null)
+                     {
+                         // Ensure unique ID?
+                         template.Id = Guid.NewGuid().ToString();
+                         template.Name += " (Imported)";
+                         await _repository.SaveAsync(template);
+                         Templates.Add(template);
+                         SelectedTemplate = template;
+                         Console.WriteLine($"[TemplatesViewModel] Imported new template {template.Id}, count: {Templates.Count}");
+                     }
+                 }
+                 catch (Exception ex)
+                 {
+                     System.Diagnostics.Debug.WriteLine($"[TemplatesViewModel] Import exception caught: {ex.Message}");
+                     WeakReferenceMessenger.Default.Send(new ShowErrorDialogMessage("Import Failed", $"Failed to import template. The file may be corrupt or incorrectly formatted.\n\nError: {ex.Message}"));
                  }
              }
          }

@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using DeviceSim.Core.Models;
 using DeviceSim.Core.Services;
 
@@ -28,7 +29,8 @@ public partial class DeviceInstanceViewModel : ViewModelBase
 
         if (value)
         {
-            _ = _deviceManager.StartDeviceAsync(Id);
+            // Gate start through MainViewModel dirty check
+            WeakReferenceMessenger.Default.Send(new RequestToggleDeviceMessage(Id, Name, false));
         }
         else
         {
@@ -85,16 +87,23 @@ public partial class DeviceInstanceViewModel : ViewModelBase
     [RelayCommand]
     public async Task Toggle()
     {
-        if (_instance.State == DeviceInstance.DeviceState.Running)
-        {
-            await _deviceManager.StopDeviceAsync(_instance.Id);
-        }
-        else
-        {
-            await _deviceManager.StartDeviceAsync(_instance.Id);
-        }
-        
-        UpdateFromModel();
+        bool isRunning = _instance.State == DeviceInstance.DeviceState.Running;
+        WeakReferenceMessenger.Default.Send(new RequestToggleDeviceMessage(_instance.Id, _instance.Name, isRunning));
+        await Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    public void OpenPoints()
+    {
+        WeakReferenceMessenger.Default.Send(new SelectDeviceMessage(Id));
+        WeakReferenceMessenger.Default.Send(new NavigationMessage("Points"));
+    }
+
+    [RelayCommand]
+    public void OpenPointMap()
+    {
+        WeakReferenceMessenger.Default.Send(new SelectDeviceMessage(Id));
+        WeakReferenceMessenger.Default.Send(new NavigationMessage("PointMap"));
     }
 
     [RelayCommand]

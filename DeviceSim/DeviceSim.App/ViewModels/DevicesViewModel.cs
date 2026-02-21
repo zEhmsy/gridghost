@@ -44,6 +44,7 @@ public partial class DevicesViewModel : ViewModelBase
             else
             {
                 Devices.Add(new DeviceInstanceViewModel(instance, _deviceManager));
+                System.Diagnostics.Debug.WriteLine($"[DevicesViewModel] Added device. Total Devices in view: {Devices.Count}");
             }
         });
     }

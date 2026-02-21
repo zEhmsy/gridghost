@@ -22,6 +22,13 @@ public class PointDefinition
     // Access Control & Override
     public AccessMode Access { get; set; } = AccessMode.ReadWrite;
     public ExternalWriteOverrideMode OverrideMode { get; set; } = ExternalWriteOverrideMode.None;
+    public int OverrideDurationSeconds { get; set; } = 10;
+    
+    [JsonIgnore]
+    public System.Threading.CancellationTokenSource? OverrideCts { get; set; }
+    
+    [JsonIgnore]
+    public string? OriginalGeneratorType { get; set; }
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter))]

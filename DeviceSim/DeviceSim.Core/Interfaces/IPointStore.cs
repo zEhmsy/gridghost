@@ -6,6 +6,7 @@ public interface IPointStore
 {
     // Basic CRUD
     void SetValue(string deviceId, string pointKey, object value, PointSource source, string? displayValue = null);
+    void UpdateOverrideStatus(string deviceId, string pointKey, string? status);
     PointValue GetValue(string deviceId, string pointKey);
     bool TryGetValue(string deviceId, string pointKey, out PointValue value);
     

@@ -91,7 +91,13 @@ GridGhost v1.2.0 introduces strict compliance features to match the robustness o
   - `OverrideMode`: Set to `ForceStatic` to automatically switch a Generator-controlled point to "Static" mode when written to externally.
 
 - **Export Map**:
-  - Generate a CSV file containing the full Modbus map (Name, Address, Type, Scale, Access) directly from the device view.
+- Generate a CSV file containing the full Modbus map (Name, Address, Type, Scale, Access) directly from the device view.
+
+## Splash Animation sequence
+GridGhost v1.4.0 features a landing splash screen using a frame-based PNG sequence.
+- **Path**: `DeviceSim/DeviceSim.App/Assets/splash_frames/`
+- **Naming**: `ezgif-frame-001.png` to `ezgif-frame-048.png`.
+- **Performance**: Frames are pre-cached on startup. If assets are missing, the app falls back to the GridGhost static icon.
 
 ## Tech Stack
 
