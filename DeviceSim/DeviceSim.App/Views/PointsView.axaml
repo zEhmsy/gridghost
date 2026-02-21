@@ -9,117 +9,124 @@
         <conv:TypeVisibilityConverter x:Key="TypeToBoolConverter"/>
     </UserControl.Resources>
 
-    <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
-            <TextBlock Text="Points Monitor" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
-            <Button Content="Refresh" Command="{Binding RefreshCommand}"/>
-            <Button Content="Save" Command="{Binding SaveCommand}" IsEnabled="{Binding IsDirty}" Background="#44ff44" Foreground="Black" FontWeight="Bold"/>
-            <TextBlock Text="Unsaved changes" IsVisible="{Binding IsDirty}" Foreground="#ffaa00" VerticalAlignment="Center" Margin="5,0,0,0" FontStyle="Italic"/>
-        </StackPanel>
+    <Border Classes="MainPanel">
+        <DockPanel>
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="15" Margin="0,0,0,20">
+                <TextBlock Text="Points Monitor" FontSize="22" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <Button Content="Refresh" Command="{Binding RefreshCommand}" Padding="15,6" CornerRadius="8"/>
+                <Button Content="Save Changes" Command="{Binding SaveCommand}" IsEnabled="{Binding IsDirty}" 
+                        Classes="Accent" Padding="20,6"/>
+                <StackPanel Orientation="Horizontal" IsVisible="{Binding IsDirty}" Spacing="5" VerticalAlignment="Center" Margin="5,0,0,0">
+                    <Path Data="M13,14H11V9H13M13,18H11V16H13M1,21H23L12,2L1,21Z" Fill="{StaticResource WarningMain}" Width="16" Height="16"/>
+                    <TextBlock Text="Unsaved changes" Foreground="{StaticResource WarningMain}" FontStyle="Italic"/>
+                </StackPanel>
+            </StackPanel>
 
-        <ScrollViewer HorizontalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding DeviceGroups}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Expander IsExpanded="{Binding IsExpanded, Mode=TwoWay}" Margin="0,5,0,5" HorizontalAlignment="Stretch">
-                            <Expander.Header>
-                                <StackPanel Orientation="Horizontal" Spacing="15" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding DeviceName}" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding Port, StringFormat='Port: {0}'}" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding Status, StringFormat='Status: {0}'}" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Running/Enabled:" VerticalAlignment="Center"/>
-                                    <CheckBox IsChecked="{Binding Enabled, Mode=OneWay}" Command="{Binding ToggleCommand}" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Expander.Header>
-
-                            <DataGrid ItemsSource="{Binding Points}" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="Gray" CanUserResizeColumns="True" MaxHeight="600">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Key" Binding="{Binding Key}" IsReadOnly="True" Width="150"/>
-                <DataGridTemplateColumn Header="Type" Width="100">
-                     <DataGridTemplateColumn.CellTemplate>
+            <ScrollViewer HorizontalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding DeviceGroups}">
+                    <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                             <ComboBox ItemsSource="{Binding AvailableTypes}" SelectedItem="{Binding Type, Mode=TwoWay}" 
-                                       IsEnabled="{Binding IsEditingAllowed}"
-                                       HorizontalAlignment="Stretch" BorderThickness="0" Background="Transparent"/>
+                            <Expander IsExpanded="{Binding IsExpanded, Mode=TwoWay}" Margin="0,0,0,10" HorizontalAlignment="Stretch"
+                                      CornerRadius="8" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                                <Expander.Header>
+                                    <StackPanel Orientation="Horizontal" Spacing="20" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding DeviceName}" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" Foreground="{StaticResource AccentMain}"/>
+                                        <TextBlock Text="{Binding Port, StringFormat='Port: {0}'}" VerticalAlignment="Center" Foreground="{StaticResource TextSecondary}"/>
+                                        <TextBlock Text="{Binding Status, StringFormat='Status: {0}'}" VerticalAlignment="Center" Foreground="{StaticResource TextSecondary}"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                            <TextBlock Text="Enabled:" VerticalAlignment="Center" Foreground="{StaticResource TextSecondary}"/>
+                                            <CheckBox IsChecked="{Binding Enabled, Mode=OneWay}" Command="{Binding ToggleCommand}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Expander.Header>
+
+                                <DataGrid ItemsSource="{Binding Points}" AutoGenerateColumns="False" IsReadOnly="True" CanUserResizeColumns="True" MaxHeight="600">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Key" Binding="{Binding Key}" IsReadOnly="True" Width="180"/>
+                                        <DataGridTemplateColumn Header="Type" Width="100">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <ComboBox ItemsSource="{Binding AvailableTypes}" SelectedItem="{Binding Type, Mode=TwoWay}" 
+                                                              IsEnabled="{Binding IsEditingAllowed}"
+                                                              HorizontalAlignment="Stretch" BorderThickness="0" Background="Transparent"/>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        
+                                        <DataGridTemplateColumn Header="Gen Type" Width="170">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel>
+                                                        <Grid ColumnDefinitions="*, Auto">
+                                                            <ComboBox Grid.Column="0" ItemsSource="{Binding AvailableGenTypes}" SelectedItem="{Binding GenType, Mode=TwoWay}" 
+                                                                      IsEnabled="{Binding IsEditingAllowed}"
+                                                                      HorizontalAlignment="Stretch" BorderThickness="0" Background="Transparent"/>
+                                                            <ToggleButton Grid.Column="1" Content="⚙️" IsChecked="{Binding IsSettingsOpen}"
+                                                                          IsVisible="{Binding !IsStatic}" Background="Transparent" Padding="5,0"/>
+                                                        </Grid>
+
+                                                        <Border IsVisible="{Binding IsSettingsOpen}" Background="{StaticResource PanelBackground}" CornerRadius="6" Padding="8" Margin="0,5,0,0">
+                                                            <StackPanel Spacing="5">
+                                                                <TextBlock Text="Stop device to edit" IsVisible="{Binding !IsEditingAllowed}" FontStyle="Italic" Foreground="{StaticResource WarningMain}" FontSize="11"/>
+                                                                <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto, Auto, Auto" Margin="0,2">
+                                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Min:" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="{StaticResource TextSecondary}" FontSize="11"/>
+                                                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding GenMin}" IsEnabled="{Binding IsEditingAllowed}" FontSize="11" MinHeight="22" Padding="4,2"/>
+
+                                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Max:" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="{StaticResource TextSecondary}" FontSize="11"/>
+                                                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding GenMax}" IsEnabled="{Binding IsEditingAllowed}" FontSize="11" MinHeight="22" Padding="4,2" Margin="0,2"/>
+
+                                                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Period (s):" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="{StaticResource TextSecondary}" FontSize="11"/>
+                                                                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding GenPeriod}" IsEnabled="{Binding IsEditingAllowed}" FontSize="11" MinHeight="22" Padding="4,2"/>
+
+                                                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Step:" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="{StaticResource TextSecondary}" FontSize="11"/>
+                                                                    <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding GenStep}" IsEnabled="{Binding IsEditingAllowed}" FontSize="11" MinHeight="22" Padding="4,2" Margin="0,2,0,0"/>
+                                                                </Grid>
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+
+                                        <DataGridTemplateColumn Header="Value" Width="*">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <DockPanel>
+                                                        <Button DockPanel.Dock="Right" Content="Set" Command="{Binding SetValueCommand}" 
+                                                                Classes="Accent" Padding="10,2" Margin="5,0,0,0"
+                                                                IsEnabled="{Binding IsEditingAllowed}"
+                                                                IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='!bool', FallbackValue=True}"/>
+                                                        
+                                                        <Button DockPanel.Dock="Right" Content="Set" Command="{Binding SetValueCommand}" 
+                                                                Classes="Accent" Padding="10,2" Margin="5,0,0,0"
+                                                                IsEnabled="{Binding IsEditingAllowed}"
+                                                                IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='bool', FallbackValue=False}"/>
+
+                                                        <Panel>
+                                                            <TextBox Name="ValInput" Text="{Binding Value, Mode=OneWay}" MinWidth="80"
+                                                                     IsEnabled="{Binding IsEditingAllowed}"
+                                                                     IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='!bool'}"/>
+                                                            
+                                                            <CheckBox IsChecked="{Binding Value, Mode=OneWay}" 
+                                                                      Command="{Binding SetValueCommand}"
+                                                                      CommandParameter="{Binding $self.IsChecked}"
+                                                                      IsEnabled="{Binding IsEditingAllowed}"
+                                                                      IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='bool'}"/>
+                                                        </Panel>
+                                                    </DockPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+
+                                        <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="110"/>
+                                        <DataGridTextColumn Header="Last Updated" Binding="{Binding LastUpdated}" Width="160"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Expander>
                         </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                
-                <DataGridTemplateColumn Header="Gen Type" Width="100">
-                    <DataGridTemplateColumn.CellTemplate>
-                         <DataTemplate>
-                              <ComboBox ItemsSource="{Binding AvailableGenTypes}" SelectedItem="{Binding GenType, Mode=TwoWay}" 
-                                        IsEnabled="{Binding IsEditingAllowed}"
-                                        HorizontalAlignment="Stretch" BorderThickness="0" Background="Transparent"/>
-                         </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-
-                <DataGridTemplateColumn Header="Min" Width="60">
-                     <DataGridTemplateColumn.CellTemplate>
-                          <DataTemplate>
-                               <TextBox Text="{Binding GenMin, Mode=TwoWay}" IsEnabled="{Binding IsEditingAllowed}" BorderThickness="0" Background="Transparent"/>
-                          </DataTemplate>
-                     </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-
-                <DataGridTemplateColumn Header="Max" Width="60">
-                     <DataGridTemplateColumn.CellTemplate>
-                          <DataTemplate>
-                               <TextBox Text="{Binding GenMax, Mode=TwoWay}" IsEnabled="{Binding IsEditingAllowed}" BorderThickness="0" Background="Transparent"/>
-                          </DataTemplate>
-                     </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-
-                <DataGridTemplateColumn Header="Period (s)" Width="80">
-                      <DataGridTemplateColumn.CellTemplate>
-                           <DataTemplate>
-                                <TextBox Text="{Binding GenPeriod, Mode=TwoWay}" IsEnabled="{Binding IsEditingAllowed}" BorderThickness="0" Background="Transparent"/>
-                           </DataTemplate>
-                      </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-
-                <DataGridTemplateColumn Header="Value" Width="*">
-                    <DataGridTemplateColumn.CellTemplate>
-                         <DataTemplate>
-                              <DockPanel>
-                                      <!-- Set/Commit Button -->
-                                      <Button DockPanel.Dock="Right" Content="Set" Command="{Binding SetValueCommand}" 
-                                              CommandParameter="{Binding #ValInput.Text}" Margin="5,0,0,0"
-                                              IsEnabled="{Binding IsEditingAllowed}"
-                                              IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='!bool', FallbackValue=True}"/>
-                                      
-                                      <Button DockPanel.Dock="Right" Content="Set" Command="{Binding SetValueCommand}" 
-                                              CommandParameter="{Binding $self.IsEffectivelyEnabled}" Margin="5,0,0,0"
-                                              IsEnabled="{Binding IsEditingAllowed}"
-                                              IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='bool', FallbackValue=False}"/>
-
-                                      <Panel>
-                                              <!-- Text Input for Numbers -->
-                                              <TextBox Name="ValInput" Text="{Binding Value, Mode=OneWay}" MinWidth="80"
-                                                       IsEnabled="{Binding IsEditingAllowed}"
-                                                       IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='!bool'}"/>
-                                              
-                                              <!-- CheckBox for Booleans -->
-                                              <CheckBox IsChecked="{Binding Value, Mode=OneWay}" 
-                                                        Command="{Binding SetValueCommand}"
-                                                        CommandParameter="{Binding $self.IsChecked}"
-                                                        IsEnabled="{Binding IsEditingAllowed}"
-                                                        IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='bool'}"/>
-                                      </Panel>
-                              </DockPanel>
-                         </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-
-                <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="100"/>
-                <DataGridTextColumn Header="Last Updated" Binding="{Binding LastUpdated}" Width="150"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </Expander>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
-    </DockPanel>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </DockPanel>
+    </Border>
 </UserControl>

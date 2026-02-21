@@ -5,15 +5,22 @@ using DeviceSim.Core.Models;
 
 namespace DeviceSim.Core.Services;
 
+public class UiConfig
+{
+    public bool SidebarCollapsed { get; set; } = false;
+}
+
 public class AppConfig
 {
     public List<DeviceInstance> Devices { get; set; } = new();
+    public UiConfig Ui { get; set; } = new();
 }
 
 public class ConfigurationService
 {
     private readonly string _configPath;
     private readonly ILogSink _logger;
+    public AppConfig CurrentConfig { get; private set; } = new();
 
     public ConfigurationService(ILogSink logger)
     {
@@ -21,19 +28,19 @@ public class ConfigurationService
         var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GridGhost");
         if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
         _configPath = Path.Combine(folder, "config.json");
+        Load(); // Initial load
     }
 
-    public void Save(IEnumerable<DeviceInstance> devices)
+    public void Save()
     {
         try
         {
-            var config = new AppConfig { Devices = devices.ToList() };
             var options = new JsonSerializerOptions 
             { 
                 WriteIndented = true,
                 Converters = { new JsonStringEnumConverter() }
             };
-            var json = JsonSerializer.Serialize(config, options);
+            var json = JsonSerializer.Serialize(CurrentConfig, options);
             File.WriteAllText(_configPath, json);
             _logger.Log("Info", $"Configuration saved to {_configPath}", "System");
         }
@@ -43,9 +50,19 @@ public class ConfigurationService
         }
     }
 
-    public List<DeviceInstance> Load()
+    public void Save(IEnumerable<DeviceInstance> devices)
     {
-        if (!File.Exists(_configPath)) return new List<DeviceInstance>();
+        CurrentConfig.Devices = devices.ToList();
+        Save();
+    }
+
+    public AppConfig Load()
+    {
+        if (!File.Exists(_configPath)) 
+        {
+            CurrentConfig = new AppConfig();
+            return CurrentConfig;
+        }
 
         try
         {
@@ -56,26 +73,25 @@ public class ConfigurationService
             };
             var config = JsonSerializer.Deserialize<AppConfig>(json, options);
             
-            // Restore default state
-            if (config?.Devices != null)
+            if (config != null)
             {
-                 foreach (var d in config.Devices)
-                 {
-                     // Ensure non-persisted state is reset
-                     d.State = DeviceInstance.DeviceState.Stopped;
-                     d.LastError = null;
-                     // Enabled state is persisted but we force it to false or allow auto-start?
-                     // Requirements say "Deterministic Start". Auto-start might be dangerous if port conflict.
-                     // Better force false.
-                     d.Enabled = false; 
-                 }
-                 return config.Devices;
+                CurrentConfig = config;
+                // Restore default state for devices
+                foreach (var d in CurrentConfig.Devices)
+                {
+                    d.State = DeviceInstance.DeviceState.Stopped;
+                    d.LastError = null;
+                    d.Enabled = false; 
+                }
+                return CurrentConfig;
             }
         }
         catch (Exception ex)
         {
             _logger.Log("Error", $"Failed to load configuration: {ex.Message}", "System");
         }
-        return new List<DeviceInstance>();
+        
+        CurrentConfig = new AppConfig();
+        return CurrentConfig;
     }
 }

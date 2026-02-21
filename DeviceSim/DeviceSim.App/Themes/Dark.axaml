@@ -1,0 +1,104 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <Styles.Resources>
+        <!-- Branding & Layout Colors -->
+        <SolidColorBrush x:Key="AppBackground" Color="#0a0a0a"/>
+        <SolidColorBrush x:Key="SidebarBackground" Color="#121212"/>
+        <SolidColorBrush x:Key="ContentBackground" Color="#181818"/>
+        <SolidColorBrush x:Key="PanelBackground" Color="#222222"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#303030"/>
+        
+        <!-- Text Colors -->
+        <SolidColorBrush x:Key="TextPrimary" Color="#ffffff"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#aaaaaa"/>
+        <SolidColorBrush x:Key="TextMuted" Color="#666666"/>
+        
+        <!-- Accent Colors -->
+        <SolidColorBrush x:Key="AccentMain" Color="#44ff44"/>
+        <SolidColorBrush x:Key="AccentHover" Color="#66ff66"/>
+        <SolidColorBrush x:Key="AccentPressed" Color="#33cc33"/>
+        <SolidColorBrush x:Key="DangerMain" Color="#ff4444"/>
+        <SolidColorBrush x:Key="WarningMain" Color="#ffaa00"/>
+    </Styles.Resources>
+
+    <!-- Sidebar Item Styles -->
+    <Style Selector="Button.SidebarItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="Height" Value="45"/>
+        <Setter Property="Padding" Value="10,0"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ContentPresenter Name="PART_ContentPresenter"
+                                  Background="{TemplateBinding Background}"
+                                  BorderBrush="{TemplateBinding BorderBrush}"
+                                  BorderThickness="{TemplateBinding BorderThickness}"
+                                  Content="{TemplateBinding Content}"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  Padding="{TemplateBinding Padding}"
+                                  VerticalContentAlignment="Center"
+                                  HorizontalContentAlignment="Left"
+                                  CornerRadius="{TemplateBinding CornerRadius}"/>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector="Button.SidebarItem:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#252525"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+    </Style>
+
+    <Style Selector="Button.SidebarActive">
+        <Setter Property="Background" Value="#2a2a2a"/>
+        <Setter Property="Foreground" Value="{StaticResource AccentMain}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <Style Selector="Button.Accent">
+        <Setter Property="Background" Value="{StaticResource AccentMain}"/>
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="CornerRadius" Value="8"/>
+    </Style>
+    <Style Selector="Button.Accent:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource AccentHover}"/>
+    </Style>
+
+    <Style Selector="Button.Danger">
+        <Setter Property="Background" Value="{StaticResource DangerMain}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="CornerRadius" Value="8"/>
+    </Style>
+    <Style Selector="Button.Danger:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#ff6666"/>
+    </Style>
+    
+    <!-- Panel & Grid Styles -->
+    <Style Selector="Border.MainPanel">
+        <Setter Property="Background" Value="{StaticResource ContentBackground}"/>
+        <Setter Property="CornerRadius" Value="14"/>
+        <Setter Property="Padding" Value="20"/>
+    </Style>
+
+    <Style Selector="DataGrid">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+        <Setter Property="HeadersVisibility" Value="Column"/>
+    </Style>
+
+    <Style Selector="DataGridColumnHeader">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+    </Style>
+
+    <Style Selector="DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
+        <Setter Property="Fill" Value="#202020"/>
+    </Style>
+
+</Styles>

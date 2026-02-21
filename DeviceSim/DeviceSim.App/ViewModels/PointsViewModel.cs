@@ -240,8 +240,10 @@ public partial class PointViewModel : ObservableObject
     [ObservableProperty] private double _genMin;
     [ObservableProperty] private double _genMax;
     [ObservableProperty] private double _genPeriod;
+    [ObservableProperty] private double _genStep;
     [ObservableProperty] private bool _isEditingAllowed;
     [ObservableProperty] private bool _isStatic;
+    [ObservableProperty] private bool _isSettingsOpen;
 
     // Derived property for UI to avoid blanking when Store sends empty value
     public string EffectiveDisplayValue 
@@ -264,7 +266,11 @@ public partial class PointViewModel : ObservableObject
         OnPropertyChanged(nameof(EffectiveDisplayValue));
     }
 
-    partial void OnGenTypeChanged(string value) => IsStatic = value == "static";
+    partial void OnGenTypeChanged(string value)
+    {
+        IsStatic = value == "static";
+        if (IsStatic) IsSettingsOpen = false;
+    }
 
     public PointViewModel(DeviceInstance device, PointDefinition def, PointValue initial, IPointStore store, DeviceManager deviceManager)
     {
@@ -296,6 +302,7 @@ public partial class PointViewModel : ObservableObject
         _genMin = def.Generator.Min;
         _genMax = def.Generator.Max;
         _genPeriod = def.Generator.PeriodSeconds;
+        _genStep = def.Generator.Step;
         
         _isStatic = _genType == "static";
         _isEditingAllowed = _device.State != DeviceInstance.DeviceState.Running;
@@ -347,8 +354,15 @@ public partial class PointViewModel : ObservableObject
         if (Math.Abs(_def.Generator.Min - GenMin) > 0.001) { _def.Generator.Min = GenMin; }
         if (Math.Abs(_def.Generator.Max - GenMax) > 0.001) { _def.Generator.Max = GenMax; }
         if (Math.Abs(_def.Generator.PeriodSeconds - GenPeriod) > 0.001) { _def.Generator.PeriodSeconds = GenPeriod; }
+        if (Math.Abs(_def.Generator.Step - GenStep) > 0.001) { _def.Generator.Step = GenStep; }
 
         return Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    public void ToggleSettings()
+    {
+        IsSettingsOpen = !IsSettingsOpen;
     }
 }
 

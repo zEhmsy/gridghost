@@ -1,0 +1,19 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DeviceSim.App.ViewModels"
+        x:Class="DeviceSim.App.Views.SplashWindow"
+        x:DataType="vm:SplashWindowViewModel"
+        Title="GridGhost"
+        Width="640" Height="360"
+        SystemDecorations="None"
+        WindowStartupLocation="CenterScreen"
+        Topmost="True"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent">
+
+    <Panel>
+        <Image Source="{Binding CurrentFrame}" 
+               Stretch="UniformToFill" 
+               IsHitTestVisible="False"/>
+    </Panel>
+</Window>

@@ -14,11 +14,28 @@ public partial class MainViewModel : ViewModelBase
 {
     private ViewModelBase _currentView;
 
+    private readonly DeviceSim.Core.Services.ConfigurationService _configService;
+
     public ViewModelBase DevicesView { get; }
     public PointsViewModel PointsView { get; }
     public PointMapViewModel PointMapView { get; }
     public ViewModelBase TemplatesView { get; }
     public ViewModelBase LogsView { get; }
+
+    [ObservableProperty]
+    private bool _isSidebarCollapsed;
+
+    partial void OnIsSidebarCollapsedChanged(bool value)
+    {
+        _configService.CurrentConfig.Ui.SidebarCollapsed = value;
+        _configService.Save();
+    }
+
+    [RelayCommand]
+    public void ToggleSidebar()
+    {
+        IsSidebarCollapsed = !IsSidebarCollapsed;
+    }
 
     public ViewModelBase CurrentView
     {
@@ -33,8 +50,12 @@ public partial class MainViewModel : ViewModelBase
         PointsViewModel pointsView, 
         TemplatesViewModel templatesView, 
         LogsViewModel logsView,
-        DeviceSim.Core.Services.DeviceManager deviceManager)
+        DeviceSim.Core.Services.DeviceManager deviceManager,
+        DeviceSim.Core.Services.ConfigurationService configService)
     {
+        _configService = configService;
+        IsSidebarCollapsed = _configService.CurrentConfig.Ui.SidebarCollapsed;
+
         DevicesView = devicesView;
         PointsView = pointsView;
         TemplatesView = templatesView;

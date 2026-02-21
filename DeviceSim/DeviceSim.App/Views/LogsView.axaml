@@ -4,19 +4,21 @@
              x:Class="DeviceSim.App.Views.LogsView"
              x:DataType="vm:LogsViewModel">
 
-    <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
-            <TextBlock Text="System Logs" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
-            <Button Content="Clear" Command="{Binding ClearCommand}"/>
-        </StackPanel>
+    <Border Classes="MainPanel">
+        <DockPanel>
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="15" Margin="0,0,0,20">
+                <TextBlock Text="System Logs" FontSize="22" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <Button Content="Clear Logs" Command="{Binding ClearCommand}" Classes="Danger" Padding="15,6"/>
+            </StackPanel>
 
-        <DataGrid ItemsSource="{Binding Logs}" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Time" Binding="{Binding Timestamp}" Width="150"/>
-                <DataGridTextColumn Header="Level" Binding="{Binding Level}" Width="80"/>
-                <DataGridTextColumn Header="Device" Binding="{Binding DeviceId}" Width="150"/>
-                <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*"/>
-            </DataGrid.Columns>
-        </DataGrid>
-    </DockPanel>
+            <DataGrid ItemsSource="{Binding Logs}" AutoGenerateColumns="False" IsReadOnly="True" CanUserResizeColumns="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Time" Binding="{Binding Timestamp}" Width="180"/>
+                    <DataGridTextColumn Header="Level" Binding="{Binding Level}" Width="100"/>
+                    <DataGridTextColumn Header="Device" Binding="{Binding DeviceId}" Width="150"/>
+                    <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+    </Border>
 </UserControl>

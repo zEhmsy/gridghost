@@ -10,6 +10,7 @@ using DeviceSim.Protocols.Modbus;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Avalonia.Data.Core.Plugins;
+using System.Threading.Tasks;
 
 namespace DeviceSim.App;
 
@@ -23,25 +24,49 @@ public partial class App : Application
         AvaloniaXamlLoader.Load(this);
     }
 
-    public override void OnFrameworkInitializationCompleted()
+    public override async void OnFrameworkInitializationCompleted()
     {
         // Remove Avalonia data validation check 
         BindingPlugins.DataValidators.RemoveAt(0);
 
-        var services = new ServiceCollection();
-        ConfigureServices(services);
-        Services = services.BuildServiceProvider();
-
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var mainVm = Services.GetRequiredService<MainViewModel>();
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = mainVm
-            };
-        }
+            var splashVm = new SplashWindowViewModel();
+            var splash = new SplashWindow { DataContext = splashVm };
+            desktop.MainWindow = splash;
+            splash.Show();
 
-        // Global scheduler start removed. Simulation is now per-device via DeviceManager.
+            // Background initialization
+            var initTask = Task.Run(() => 
+            {
+                var services = new ServiceCollection();
+                ConfigureServices(services);
+                Services = services.BuildServiceProvider();
+                
+                // Force load device manager to trigger background repository loading
+                _ = Services.GetRequiredService<DeviceManager>();
+            });
+
+            // Wait for animation or timeout (3s)
+            // The VM already invokes AnimationCompleted when 48 frames are done.
+            var tcs = new TaskCompletionSource<bool>();
+            splashVm.AnimationCompleted += () => tcs.TrySetResult(true);
+            
+            // Timeout after 3.5s just in case
+            var delayTask = Task.Delay(3500);
+
+            await Task.WhenAny(tcs.Task, delayTask);
+            await initTask;
+
+            // Transition to MainWindow
+            var mainVm = Services.GetRequiredService<MainViewModel>();
+            var mainWindow = new MainWindow { DataContext = mainVm };
+            
+            desktop.MainWindow = mainWindow;
+            mainWindow.Show();
+            splash.Close();
+            splashVm.Dispose();
+        }
 
         base.OnFrameworkInitializationCompleted();
     }

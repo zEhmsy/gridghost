@@ -35,10 +35,10 @@ public class DeviceManager
         _configService = configService;
 
         // Load persisted devices
-        var saved = _configService.Load();
-        if (saved != null && saved.Any())
+        var config = _configService.Load();
+        if (config?.Devices != null && config.Devices.Any())
         {
-            foreach (var d in saved)
+            foreach (var d in config.Devices)
             {
                 _instances[d.Id] = d;
                 _pointStore.InitializePoints(d.Id, d.Points);

@@ -3,70 +3,123 @@
         xmlns:vm="using:DeviceSim.App.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:conv="using:DeviceSim.App.Converters"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
         x:Class="DeviceSim.App.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Title="GridGhost"
         Icon="avares://DeviceSim.App/Assets/Icons/gridghost_icon.ico">
 
-    <Grid ColumnDefinitions="200,*">
+    <Window.Resources>
+        <conv:SidebarWidthConverter x:Key="SidebarWidthConverter"/>
+    </Window.Resources>
+
+    <Grid ColumnDefinitions="Auto,*">
         <!-- Sidebar -->
-        <Border Grid.Column="0" Background="#1e1e1e" BorderBrush="#333" BorderThickness="0,0,1,0">
-            <DockPanel Margin="10">
-                <StackPanel DockPanel.Dock="Top" Spacing="5">
-                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,25">
-                        <Image Source="avares://DeviceSim.App/Assets/Icons/gridghost_icon.png" Width="36" Height="36"/>
-                        <TextBlock Text="GridGhost" Foreground="White" FontWeight="Bold" FontSize="20" VerticalAlignment="Center"/>
-                    </StackPanel>
-                    
-                    <Button Command="{Binding NavigateCommand}" CommandParameter="Devices" 
-                            HorizontalAlignment="Stretch" Content="Devices" 
-                            Height="40" VerticalContentAlignment="Center"
-                            Background="Transparent" Foreground="#ccc" BorderThickness="0"/>
-                    <Button Command="{Binding NavigateCommand}" CommandParameter="Points" 
-                            HorizontalAlignment="Stretch" Content="Points" 
-                            Height="40" VerticalContentAlignment="Center"
-                            Background="Transparent" Foreground="#ccc" BorderThickness="0"/>
-                    <Button Command="{Binding NavigateCommand}" CommandParameter="PointMap" 
-                            HorizontalAlignment="Stretch" Content="Point Map (Niagara)" 
-                            Height="40" VerticalContentAlignment="Center"
-                            Background="Transparent" Foreground="#44FF44" FontWeight="Bold" BorderThickness="0"/>
-                    <Button Command="{Binding NavigateCommand}" CommandParameter="Templates" 
-                            HorizontalAlignment="Stretch" Content="Templates" 
-                            Height="40" VerticalContentAlignment="Center"
-                            Background="Transparent" Foreground="#ccc" BorderThickness="0"/>
-                    <Button Command="{Binding NavigateCommand}" CommandParameter="Logs" 
-                            HorizontalAlignment="Stretch" Content="Logs" 
-                            Height="40" VerticalContentAlignment="Center"
-                            Background="Transparent" Foreground="#ccc" BorderThickness="0"/>
+        <Border Grid.Column="0" 
+                Width="{Binding IsSidebarCollapsed, Converter={StaticResource SidebarWidthConverter}}"
+                Background="{StaticResource SidebarBackground}" 
+                BorderBrush="{StaticResource BorderBrush}" 
+                BorderThickness="0,0,1,0">
+            <Grid RowDefinitions="Auto, Auto, *, Auto">
+                <!-- Header with Hamburger -->
+                <StackPanel Grid.Row="0" Margin="15,15,10,25">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Button Grid.Column="0" Command="{Binding ToggleSidebarCommand}"
+                                Background="Transparent" Padding="10" CornerRadius="8">
+                            <Path Data="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" 
+                                  Fill="{StaticResource TextPrimary}"
+                                  Stretch="Uniform" Width="20" Height="20"/>
+                        </Button>
+                        
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" Margin="10,0,0,0"
+                                    IsVisible="{Binding !IsSidebarCollapsed}">
+                            <Image Source="avares://DeviceSim.App/Assets/Icons/gridghost_icon.png" Width="28" Height="28"/>
+                            <TextBlock Text="GridGhost" Foreground="{StaticResource AccentMain}" FontWeight="Bold" FontSize="18" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Navigation -->
+                <StackPanel Grid.Row="1" Spacing="8" Margin="15,0,10,0">
+                    <Button Classes="SidebarItem" Command="{Binding NavigateCommand}" CommandParameter="Devices" 
+                            ToolTip.Tip="Devices">
+                        <StackPanel Orientation="Horizontal" Spacing="15">
+                            <Path Data="M4,7V19H20V7H4M11,10H13V12H11V10M8,10H10V12H8V10M11,13H13V15H11V13M8,13H10V15H8V13M4,13H6V15H4V13M4,10H6V12H4V10M14,10H16V12H14V10M17,10H19V12H17V10M14,13H16V15H14V13M17,13H19V15H17V13Z" 
+                                  Fill="{StaticResource TextSecondary}" Width="20" Height="20"/>
+                            <TextBlock Text="Devices" IsVisible="{Binding !IsSidebarCollapsed}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="SidebarItem" Command="{Binding NavigateCommand}" CommandParameter="Points"
+                            ToolTip.Tip="Points Monitor">
+                        <StackPanel Orientation="Horizontal" Spacing="15">
+                            <Path Data="M19.14,12.94C19.14,12.63 19.17,12.32 19.17,12C19.17,11.68 19.14,11.37 19.14,11.06L20.52,9.98C20.64,9.88 20.68,9.71 20.59,9.58L19.29,7.33C19.2,7.21 19.04,7.16 18.91,7.21L17.28,7.87C16.94,7.61 16.57,7.39 16.17,7.23L15.92,5.5C15.89,5.36 15.77,5.25 15.63,5.25H13.04C12.9,5.25 12.78,5.36 12.75,5.5L12.5,7.23C12.1,7.39 11.73,7.61 11.39,7.87L9.76,7.21C9.63,7.16 9.47,7.21 9.38,7.33L8.08,9.58C7.99,9.71 8.03,9.88 8.15,9.98L9.53,11.06C9.53,11.37 9.5,11.68 9.5,12C9.5,12.32 9.53,12.63 9.53,12.94L8.15,14.02C8.03,14.12 7.99,14.29 8.08,14.42L9.38,16.67C9.47,16.79 9.63,16.84 9.76,16.79L11.39,16.13C11.73,16.39 12.1,16.61 12.5,16.77L12.75,18.5C12.78,18.64 12.9,18.75 13.04,18.75H15.63C15.77,18.75 15.89,18.64 15.92,18.5L16.17,16.77C16.57,16.61 16.94,16.39 17.28,16.13L18.91,16.79C19.04,16.84 19.2,16.79 19.29,16.67L20.59,14.42C20.68,14.29 20.64,14.12 20.52,14.02L19.14,12.94M14.33,14.75C12.81,14.75 11.58,13.52 11.58,12C11.58,10.48 12.81,9.25 14.33,9.25C15.85,9.25 17.08,10.48 17.08,12C17.08,13.52 15.85,14.75 14.33,14.75Z" 
+                                  Fill="{StaticResource TextSecondary}" Width="20" Height="20"/>
+                            <TextBlock Text="Points Monitor" IsVisible="{Binding !IsSidebarCollapsed}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="SidebarItem" Command="{Binding NavigateCommand}" CommandParameter="PointMap"
+                            ToolTip.Tip="Niagara Map">
+                        <StackPanel Orientation="Horizontal" Spacing="15">
+                            <Path Data="M15,13H16.5V15.82L18.94,17.23L18.19,18.53L15,16.69V13M19,8H5V19H19V8M19,6C20.1,6 21,6.9 21,8V19C21,20.1 20.1,21 19,21H5C3.89,21 3,20.1 3,19V8C3,6.9 3.89,6 5,6H19M18,3V5H6V3H18Z" 
+                                  Fill="{StaticResource TextSecondary}" Width="20" Height="20"/>
+                            <TextBlock Text="Niagara Map" IsVisible="{Binding !IsSidebarCollapsed}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="SidebarItem" Command="{Binding NavigateCommand}" CommandParameter="Templates"
+                            ToolTip.Tip="Templates">
+                        <StackPanel Orientation="Horizontal" Spacing="15">
+                            <Path Data="M13,9V3.5L18.5,9M6,2C4.89,2 4,2.89 4,4V20C4,21.1 4.89,22 6,22H18C19.1,22 20,21.1 20,20V8L14,2H6Z" 
+                                  Fill="{StaticResource TextSecondary}" Width="20" Height="20"/>
+                            <TextBlock Text="Templates" IsVisible="{Binding !IsSidebarCollapsed}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="SidebarItem" Command="{Binding NavigateCommand}" CommandParameter="Logs"
+                            ToolTip.Tip="Logs">
+                        <StackPanel Orientation="Horizontal" Spacing="15">
+                            <Path Data="M14,17H7V15H14V17M17,13H7V11H17V13M17,9H7V7H17V9M19,3H5C3.89,3 3,3.89 3,5V19C3,20.1 3.89,21 5,21H19C20.1,21 21,20.1 21,19V5C21,3.89 20.1,3 19,3Z" 
+                                  Fill="{StaticResource TextSecondary}" Width="20" Height="20"/>
+                            <TextBlock Text="Logs" IsVisible="{Binding !IsSidebarCollapsed}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
                 
-                <Button DockPanel.Dock="Bottom" Command="{Binding OpenDonationCommand}" 
-                        HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                <Button Grid.Row="3" Command="{Binding OpenDonationCommand}" 
+                        HorizontalAlignment="Stretch"
                         Background="#FFDD00" Foreground="Black" Height="45"
-                        CornerRadius="8" Margin="0,0,0,5">
+                        CornerRadius="8" Margin="15,0,15,16">
                     <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
                         <TextBlock Text="☕" FontSize="16"/>
-                        <TextBlock Text="Buy me a coffee" FontWeight="SemiBold"/>
+                        <TextBlock Text="Buy me a coffee" IsVisible="{Binding !IsSidebarCollapsed}" FontWeight="SemiBold"/>
                     </StackPanel>
                 </Button>
-            </DockPanel>
+            </Grid>
         </Border>
 
         <!-- Content Area -->
-        <ContentControl Grid.Column="1" Content="{Binding CurrentView}" Margin="10"/>
+        <Panel Grid.Column="1" Background="{StaticResource AppBackground}">
+            <!-- Faint Radial Gradient Decoration -->
+            <Ellipse Fill="#1544ff44" Width="800" Height="800" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-400,-400">
+                <Ellipse.Effect>
+                    <BlurEffect Radius="100"/>
+                </Ellipse.Effect>
+            </Ellipse>
+
+            <ContentControl Content="{Binding CurrentView}" Margin="20"/>
+        </Panel>
 
         <!-- Intercept Dialog Overlay for Unsaved Changes -->
-        <Border Grid.Column="0" Grid.ColumnSpan="2" Background="#80000000" IsVisible="{Binding IsConfirmNavigateVisible}" ZIndex="100">
-            <Border Background="#2a2a2a" Width="400" Height="200" CornerRadius="8" BorderBrush="#555" BorderThickness="1"
-                    HorizontalAlignment="Center" VerticalAlignment="Center" Padding="20">
-                <StackPanel VerticalAlignment="Center" Spacing="20">
-                    <TextBlock Text="Unsaved Changes" FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+        <Border Grid.Column="0" Grid.ColumnSpan="2" Background="#cc000000" IsVisible="{Binding IsConfirmNavigateVisible}" ZIndex="100">
+            <Border Background="{StaticResource PanelBackground}" Width="400" MaxHeight="250" CornerRadius="14" 
+                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" Padding="30">
+                <StackPanel VerticalAlignment="Center" Spacing="25">
+                    <TextBlock Text="Unsaved Changes" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Center"/>
                     <TextBlock Text="You have unsaved changes in the current view. How would you like to proceed?" 
-                               TextWrapping="Wrap" Foreground="#ccc" TextAlignment="Center"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" Margin="0,10,0,0">
-                        <Button Content="Save" Command="{Binding ConfirmNavigateSaveCommand}" Width="100" HorizontalContentAlignment="Center" Background="#44ff44" Foreground="Black" FontWeight="Bold"/>
-                        <Button Content="Discard" Command="{Binding ConfirmNavigateDiscardCommand}" Width="100" HorizontalContentAlignment="Center" Background="#ff4444" Foreground="White"/>
+                               TextWrapping="Wrap" Foreground="{StaticResource TextSecondary}" TextAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+                        <Button Content="Save" Command="{Binding ConfirmNavigateSaveCommand}" Classes="Accent" Width="100" HorizontalContentAlignment="Center"/>
+                        <Button Content="Discard" Command="{Binding ConfirmNavigateDiscardCommand}" Classes="Danger" Width="100" HorizontalContentAlignment="Center"/>
                         <Button Content="Cancel" Command="{Binding ConfirmNavigateCancelCommand}" Width="100" HorizontalContentAlignment="Center"/>
                     </StackPanel>
                 </StackPanel>
@@ -74,13 +127,14 @@
         </Border>
 
         <!-- Error Dialog Overlay -->
-        <Border Grid.Column="0" Grid.ColumnSpan="2" Background="#80000000" IsVisible="{Binding IsErrorDialogVisible}" ZIndex="200">
-            <Border Background="#2a2a2a" Width="450" MinHeight="180" CornerRadius="8" BorderBrush="#dd3333" BorderThickness="2"
-                    HorizontalAlignment="Center" VerticalAlignment="Center" Padding="20">
+        <Border Grid.Column="0" Grid.ColumnSpan="2" Background="#cc000000" IsVisible="{Binding IsErrorDialogVisible}" ZIndex="200">
+            <Border Background="{StaticResource PanelBackground}" Width="450" MinHeight="180" CornerRadius="14" 
+                    BorderBrush="{StaticResource DangerMain}" BorderThickness="2"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" Padding="30">
                 <StackPanel VerticalAlignment="Center" Spacing="20">
-                    <TextBlock Text="{Binding ErrorDialogTitle}" FontSize="20" FontWeight="Bold" Foreground="#ff4444" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding ErrorDialogTitle}" FontSize="20" FontWeight="Bold" Foreground="{StaticResource DangerMain}" HorizontalAlignment="Center"/>
                     <TextBlock Text="{Binding ErrorDialogMessage}" 
-                               TextWrapping="Wrap" Foreground="#ccc" TextAlignment="Center"/>
+                               TextWrapping="Wrap" Foreground="{StaticResource TextSecondary}" TextAlignment="Center"/>
                     <Button Content="Dismiss" Command="{Binding CloseErrorDialogCommand}" Width="100" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="0,15,0,0"/>
                 </StackPanel>
             </Border>

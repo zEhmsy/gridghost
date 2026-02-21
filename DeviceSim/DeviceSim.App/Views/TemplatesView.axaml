@@ -7,13 +7,13 @@
 
     <Grid ColumnDefinitions="300, *">
         <!-- LEFT PANEL: List -->
-        <Border Grid.Column="0" BorderBrush="#303030" BorderThickness="0,0,1,0" Background="#1e1e1e">
+        <Border Grid.Column="0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0" Background="{StaticResource SidebarBackground}">
              <Grid RowDefinitions="Auto, *, Auto">
                  <StackPanel Grid.Row="0" Margin="10" Spacing="5">
-                     <TextBlock Text="TEMPLATES" FontWeight="Bold" Foreground="#aaaaaa"/>
+                     <TextBlock Text="TEMPLATES" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" FontSize="12" LetterSpacing="1"/>
                      <Grid ColumnDefinitions="*, Auto">
-                         <Button Grid.Column="0" Content="New" Command="{Binding CreateNewCommand}" HorizontalAlignment="Stretch" Margin="0,0,5,0"/>
-                         <Button Grid.Column="1" Content="Imp" Command="{Binding ImportCommand}" ToolTip.Tip="Import JSON"/>
+                         <Button Grid.Column="0" Content="Create New" Command="{Binding CreateNewCommand}" Classes="Accent" HorizontalAlignment="Stretch" Margin="0,0,8,0"/>
+                         <Button Grid.Column="1" Content="Import" Command="{Binding ImportCommand}" Padding="10,5" ToolTip.Tip="Import JSON"/>
                      </Grid>
                  </StackPanel>
 
@@ -29,138 +29,138 @@
                  </ListBox>
                  
                  <StackPanel Grid.Row="2" Margin="10" Spacing="5">
-                      <Button Content="Duplicate" Command="{Binding DuplicateCommand}" HorizontalAlignment="Stretch"/>
-                      <Button Content="Delete" Command="{Binding DeleteCommand}" HorizontalAlignment="Stretch" Background="#552222"/>
+                      <Button Content="Duplicate" Command="{Binding DuplicateCommand}" HorizontalAlignment="Stretch" Padding="10,8"/>
+                      <Button Content="Delete Template" Command="{Binding DeleteCommand}" Classes="Danger" HorizontalAlignment="Stretch" Padding="10,8"/>
                  </StackPanel>
              </Grid>
         </Border>
 
         <!-- RIGHT PANEL: Editor -->
-        <ContentControl Grid.Column="1" Content="{Binding EditorViewModel}">
-            <ContentControl.ContentTemplate>
-                <DataTemplate DataType="vm:TemplateEditorViewModel">
-                    <Grid RowDefinitions="Auto, *, Auto" Margin="20">
-                        
-                        <!-- Header / Metadata -->
-                        <StackPanel Grid.Row="0" Spacing="10">
-                            <TextBlock Text="Edit Template" FontSize="20" FontWeight="Bold"/>
-                            
-                             <Grid ColumnDefinitions="Auto, *, Auto, Auto" RowDefinitions="Auto, Auto" >
-                                 <!-- Row 1 -->
-                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" VerticalAlignment="Center" Width="80"/>
-                                 <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Name}" Margin="0,0,10,5"/>
-                                 
-                                 <TextBlock Grid.Row="0" Grid.Column="2" Text="ID:" VerticalAlignment="Center" Width="30"/>
-                                 <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding Id}" IsReadOnly="True" Width="150" Margin="0,0,0,5" Foreground="#888888"/>
-
-                                 <!-- Row 2 -->
-                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Protocol:" VerticalAlignment="Center"/>
-                                 <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Source={x:Static vm:TemplateEditorViewModel.ProtocolTypes}}" 
-                                           SelectedItem="{Binding Protocol}" Margin="0,0,10,0" IsEnabled="False"/> 
-                                           <!-- Parsing Enum for ComboBox might need converter or list in VM. 
-                                                Actually ProtocolTypes is not a static property on DeviceTemplate. 
-                                                Let's just bind to Protocol enum directly if Avalonia supports it, or use VM property.
-                                           -->
-                                 
-                                 <TextBlock Grid.Row="1" Grid.Column="2" Text="Port:" VerticalAlignment="Center"/>
-                                 <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding DefaultPort}" Width="150"/>
-                             </Grid>
-                             
-                             <Separator Background="#303030" Height="2"/>
-                        </StackPanel>
-
-                        <!-- Points Editor -->
-                        <Grid Grid.Row="1" RowDefinitions="Auto, *" Margin="0,10,0,0">
-                            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="0,0,0,5">
-                                <TextBlock Text="Points Definition" FontWeight="Bold" VerticalAlignment="Center"/>
-                                <Button Content="Add Point" Command="{Binding AddPointCommand}" Classes="accent"/>
-                                <Button Content="Remove Selected" Command="{Binding RemovePointCommand}" 
-                                        CommandParameter="{Binding #PointsGrid.SelectedItem}" />
-                            </StackPanel>
-                            
-                            <DataGrid Grid.Row="1" Name="PointsGrid" ItemsSource="{Binding Points}" AutoGenerateColumns="False" 
-                                      CanUserResizeColumns="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="#303030">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="120"/>
-                                    <DataGridTextColumn Header="Name" Binding="{Binding Point.Name}" Width="120"/>
+        <Border Grid.Column="1" Classes="MainPanel" Margin="20">
+            <Panel>
+                <ContentControl Content="{Binding EditorViewModel}">
+                    <ContentControl.ContentTemplate>
+                        <DataTemplate DataType="vm:TemplateEditorViewModel">
+                            <Grid RowDefinitions="Auto, *, Auto">
+                                
+                                <!-- Header / Metadata -->
+                                <StackPanel Grid.Row="0" Spacing="15">
+                                    <TextBlock Text="Template Configuration" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource AccentMain}"/>
                                     
-                                    <!-- Modbus specific columns -->
-                                    <DataGridTemplateColumn Header="Kind" Width="100">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <ComboBox ItemsSource="{Binding ModbusKinds}" SelectedItem="{Binding ModbusKind}" HorizontalAlignment="Stretch"/>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
+                                     <Grid ColumnDefinitions="Auto, *, Auto, Auto" RowDefinitions="Auto, Auto" >
+                                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" VerticalAlignment="Center" Width="80" Foreground="{StaticResource TextSecondary}"/>
+                                         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Name}" Margin="0,0,15,8"/>
+                                         
+                                         <TextBlock Grid.Row="0" Grid.Column="2" Text="ID:" VerticalAlignment="Center" Width="40" Foreground="{StaticResource TextSecondary}"/>
+                                         <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding Id}" IsReadOnly="True" Width="180" Margin="0,0,0,8" Foreground="{StaticResource TextMuted}" BorderThickness="0" Background="#111"/>
 
-                                    <DataGridTextColumn Header="Offset" Binding="{Binding ModbusAddress}" Width="60"/>
-                                    <DataGridTextColumn Header="Addr Preview" Binding="{Binding NiagaraAddressPreview}" IsReadOnly="True" Width="80" Foreground="#88aaaa"/>
+                                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Protocol:" VerticalAlignment="Center" Foreground="{StaticResource TextSecondary}"/>
+                                         <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Source={x:Static vm:TemplateEditorViewModel.ProtocolTypes}}" 
+                                                   SelectedItem="{Binding Protocol}" Margin="0,0,15,0" IsEnabled="False" HorizontalAlignment="Stretch"/> 
+                                         
+                                         <TextBlock Grid.Row="1" Grid.Column="2" Text="Port:" VerticalAlignment="Center" Foreground="{StaticResource TextSecondary}"/>
+                                         <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding DefaultPort}" Width="180"/>
+                                     </Grid>
+                                </StackPanel>
 
-                                    <DataGridTemplateColumn Header="Type" Width="80">
-                                         <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <ComboBox ItemsSource="{Binding PointTypes}" SelectedItem="{Binding Type}" HorizontalAlignment="Stretch"/>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
+                                <!-- Points Editor -->
+                                <Grid Grid.Row="1" RowDefinitions="Auto, *" Margin="0,25,0,0">
+                                    <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="15" Margin="0,0,0,10">
+                                        <TextBlock Text="Points Definitions" FontWeight="SemiBold" FontSize="18" VerticalAlignment="Center"/>
+                                        <Button Content="Add Point" Command="{Binding AddPointCommand}" Classes="Accent" Padding="15,4"/>
+                                        <Button Content="Remove Selected" Command="{Binding RemovePointCommand}" 
+                                                Classes="Danger" CommandParameter="{Binding #PointsGrid.SelectedItem}" Padding="15,4"/>
+                                    </StackPanel>
                                     
-                                    <!-- Generator -->
-                                    <DataGridTemplateColumn Header="Generator" Width="80">
-                                         <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <ComboBox ItemsSource="{Binding GeneratorTypes}" SelectedItem="{Binding GeneratorType}" HorizontalAlignment="Stretch"/>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                                    
-                                    <DataGridTextColumn Header="Scale" Binding="{Binding Scale}" Width="60"/>
-                                    
-                                    <DataGridTemplateColumn Header="Access" Width="90">
-                                         <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <ComboBox ItemsSource="{Binding AccessModes}" SelectedItem="{Binding Access}" HorizontalAlignment="Stretch"/>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
+                                    <DataGrid Grid.Row="1" Name="PointsGrid" ItemsSource="{Binding Points}" AutoGenerateColumns="False" 
+                                              CanUserResizeColumns="True">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="150"/>
+                                            <DataGridTextColumn Header="Name" Binding="{Binding Point.Name}" Width="150"/>
+                                            
+                                            <DataGridTemplateColumn Header="Kind" Width="120">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <ComboBox ItemsSource="{Binding ModbusKinds}" SelectedItem="{Binding ModbusKind}" HorizontalAlignment="Stretch" BorderThickness="0" Background="Transparent"/>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
 
-                                    <DataGridTemplateColumn Header="Override" Width="110">
-                                         <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <ComboBox ItemsSource="{Binding OverrideModes}" SelectedItem="{Binding OverrideMode}" HorizontalAlignment="Stretch"/>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
+                                            <DataGridTextColumn Header="Address" Binding="{Binding ModbusAddress}" Width="80"/>
+                                            <DataGridTextColumn Header="Preview" Binding="{Binding NiagaraAddressPreview}" IsReadOnly="True" Width="100" Foreground="{StaticResource TextMuted}"/>
 
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </Grid>
+                                            <DataGridTemplateColumn Header="Type" Width="100">
+                                                 <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <ComboBox ItemsSource="{Binding PointTypes}" SelectedItem="{Binding Type}" HorizontalAlignment="Stretch" BorderThickness="0" Background="Transparent"/>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                            
+                                            <DataGridTemplateColumn Header="Generator" Width="100">
+                                                 <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <ComboBox ItemsSource="{Binding GeneratorTypes}" SelectedItem="{Binding GeneratorType}" HorizontalAlignment="Stretch" BorderThickness="0" Background="Transparent"/>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                            
+                                            <DataGridTextColumn Header="Scale" Binding="{Binding Scale}" Width="70"/>
+                                            
+                                            <DataGridTemplateColumn Header="Access" Width="110">
+                                                 <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <ComboBox ItemsSource="{Binding AccessModes}" SelectedItem="{Binding Access}" HorizontalAlignment="Stretch" BorderThickness="0" Background="Transparent"/>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
 
-                        <!-- Footer / Validation -->
-                        <StackPanel Grid.Row="2" Margin="0,10,0,0">
-                             <Border Background="#331100" BorderBrush="#aa4400" BorderThickness="1" Padding="10" 
-                                     IsVisible="{Binding HasErrors}" Margin="0,0,0,10">
-                                 <TextBlock Text="{Binding ValidationErrors}" Foreground="#ffccaa" TextWrapping="Wrap"/>
-                             </Border>
-                             
-                             <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Right">
-                                 <Button Content="Create Device Instance from this Template" 
-                                         Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).CreateInstanceCommand}"
-                                         IsEnabled="{Binding !HasErrors}"/>
-                                 <Button Content="SAVE TEMPLATE" 
-                                         Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).SaveEditorCommand}"
-                                         Classes="accent" Width="150" FontWeight="Bold" Background="#0066cc"/>
-                             </StackPanel>
-                        </StackPanel>
-                    </Grid>
-                </DataTemplate>
-            </ContentControl.ContentTemplate>
-        </ContentControl>
+                                            <DataGridTemplateColumn Header="Override" Width="120">
+                                                 <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <ComboBox ItemsSource="{Binding OverrideModes}" SelectedItem="{Binding OverrideMode}" HorizontalAlignment="Stretch" BorderThickness="0" Background="Transparent"/>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Grid>
+
+                                <!-- Footer / Validation -->
+                                <StackPanel Grid.Row="2" Margin="0,20,0,0">
+                                     <Border Background="#331100" BorderBrush="#aa4400" BorderThickness="1" Padding="15" CornerRadius="8"
+                                             IsVisible="{Binding HasErrors}" Margin="0,0,0,15">
+                                         <StackPanel Orientation="Horizontal" Spacing="10">
+                                             <Path Data="M13,14H11V9H13M13,18H11V16H13M1,21H23L12,2L1,21Z" Fill="#ffccaa" Width="16" Height="16" VerticalAlignment="Top" Margin="0,2,0,0"/>
+                                             <TextBlock Text="{Binding ValidationErrors}" Foreground="#ffccaa" TextWrapping="Wrap"/>
+                                         </StackPanel>
+                                     </Border>
+                                     
+                                     <StackPanel Orientation="Horizontal" Spacing="15" HorizontalAlignment="Right">
+                                         <Button Content="Create Device Instance" 
+                                                 Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).CreateInstanceCommand}"
+                                                 IsEnabled="{Binding !HasErrors}" Padding="20,10" CornerRadius="8"/>
+                                         <Button Content="SAVE TEMPLATE" 
+                                                 Command="{Binding $parent[UserControl].((vm:TemplatesViewModel)DataContext).SaveEditorCommand}"
+                                                 Classes="Accent" Padding="30,10" FontWeight="Bold"/>
+                                     </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                </ContentControl>
+                
+                <StackPanel IsVisible="{Binding EditorViewModel, Converter={x:Static ObjectConverters.IsNull}}" 
+                            VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="15">
+                     <Path Data="M13,9V3.5L18.5,9M6,2C4.89,2 4,2.89 4,4V20C4,21.1 4.89,22 6,22H18C19.1,22 20,21.1 20,20V8L14,2H6Z" 
+                           Fill="{StaticResource TextMuted}" Width="64" Height="64" HorizontalAlignment="Center"/>
+                     <TextBlock Text="Select a template from the list to view or edit" 
+                                FontSize="18" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Panel>
+        </Border>
         
-        <!-- Empty State overlay if EditorViewModel is null? 
-             Actually ContentControl will just show nothing if null. 
-             We can add a fallback. -->
-        <TextBlock Grid.Column="1" Text="Select a template to view or edit" 
-                   HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#555555"
-                   IsVisible="{Binding EditorViewModel, Converter={x:Static ObjectConverters.IsNull}}"/>
+
     </Grid>
 </UserControl>
