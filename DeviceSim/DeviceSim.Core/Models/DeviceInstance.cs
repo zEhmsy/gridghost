@@ -50,7 +50,33 @@ public class DeviceInstance
                 DeviceInstanceId = template.Bacnet.DeviceInstanceId,
                 VendorId = template.Bacnet.VendorId
             } : null,
-            Points = template.Points.Select(p => p).ToList() // Shallow copy of points definition list
+            Points = template.Points.Select(p => new PointDefinition
+            {
+                Key = p.Key,
+                Name = p.Name,
+                Type = p.Type,
+                NiagaraType = p.NiagaraType,
+                Unit = p.Unit,
+                Access = p.Access,
+                Modbus = p.Modbus == null ? null : new ModbusPointConfig
+                {
+                    Address = p.Modbus.Address,
+                    Kind = p.Modbus.Kind,
+                    Scale = p.Modbus.Scale,
+                    BitField = p.Modbus.BitField == null ? null : new BitFieldConfig
+                    {
+                        StartBit = p.Modbus.BitField.StartBit,
+                        BitLength = p.Modbus.BitField.BitLength
+                    }
+                },
+                Generator = p.Generator == null ? new GeneratorConfig() : new GeneratorConfig
+                {
+                    Type = p.Generator.Type,
+                    Min = p.Generator.Min,
+                    Max = p.Generator.Max,
+                    PeriodSeconds = p.Generator.PeriodSeconds
+                }
+            }).ToList()
         };
     }
 }

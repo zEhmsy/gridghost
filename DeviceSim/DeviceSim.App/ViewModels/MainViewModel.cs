@@ -1,7 +1,12 @@
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using System.Windows.Input;
+using System.Threading.Tasks;
 
 namespace DeviceSim.App.ViewModels;
+
+public record NavigationMessage(string ViewName);
 
 public partial class MainViewModel : ViewModelBase
 {
@@ -25,7 +30,8 @@ public partial class MainViewModel : ViewModelBase
         DevicesViewModel devicesView, 
         PointsViewModel pointsView, 
         TemplatesViewModel templatesView, 
-        LogsViewModel logsView)
+        LogsViewModel logsView,
+        DeviceSim.Core.Services.DeviceManager deviceManager)
     {
         DevicesView = devicesView;
         PointsView = pointsView;
@@ -38,10 +44,37 @@ public partial class MainViewModel : ViewModelBase
         _currentView = DevicesView; // Default
 
         NavigateCommand = new RelayCommand<string>(Navigate);
+        
+        deviceManager.OnError += ShowError;
+        
+        WeakReferenceMessenger.Default.Register<NavigationMessage>(this, (r, m) =>
+        {
+            Navigate(m.ViewName);
+        });
     }
 
     private void Navigate(string? viewName)
     {
+        if (string.IsNullOrEmpty(viewName)) return;
+
+        if (CurrentView is IChangeTracker tracker && tracker.IsDirty)
+        {
+            _targetViewName = viewName;
+            IsConfirmNavigateVisible = true;
+            return;
+        }
+
+        ExecuteNavigation(viewName);
+    }
+
+    private void ExecuteNavigation(string viewName)
+    {
+        if (viewName == "EXIT")
+        {
+            System.Environment.Exit(0);
+            return;
+        }
+        
         switch (viewName)
         {
             case "Devices": CurrentView = DevicesView; break;
@@ -50,6 +83,85 @@ public partial class MainViewModel : ViewModelBase
             case "Templates": CurrentView = TemplatesView; break;
             case "Logs": CurrentView = LogsView; break;
         }
+    }
+
+    public void RequestClose()
+    {
+        if (CurrentView is IChangeTracker tracker && tracker.IsDirty)
+        {
+            _targetViewName = "EXIT";
+            IsConfirmNavigateVisible = true;
+        }
+        else
+        {
+            System.Environment.Exit(0);
+        }
+    }
+
+    private string? _targetViewName;
+
+    [ObservableProperty]
+    private bool _isConfirmNavigateVisible;
+
+    [RelayCommand]
+    public async Task ConfirmNavigateSaveAsync()
+    {
+        if (CurrentView is IChangeTracker tracker && tracker.IsDirty)
+        {
+            var success = await tracker.SaveChangesAsync();
+            if (!success) {
+                // If save failed, don't navigate yet, user might want to fix it
+                IsConfirmNavigateVisible = false;
+                return;
+            }
+        }
+        IsConfirmNavigateVisible = false;
+        if (_targetViewName != null) ExecuteNavigation(_targetViewName);
+        _targetViewName = null;
+    }
+
+    [RelayCommand]
+    public void ConfirmNavigateDiscard()
+    {
+        if (CurrentView is IChangeTracker tracker && tracker.IsDirty)
+        {
+            tracker.DiscardChanges();
+        }
+        IsConfirmNavigateVisible = false;
+        if (_targetViewName != null) ExecuteNavigation(_targetViewName);
+        _targetViewName = null;
+    }
+
+    [RelayCommand]
+    public void ConfirmNavigateCancel()
+    {
+        IsConfirmNavigateVisible = false;
+        _targetViewName = null;
+    }
+
+    [ObservableProperty]
+    private bool _isErrorDialogVisible;
+
+    [ObservableProperty]
+    private string _errorDialogTitle = string.Empty;
+
+    [ObservableProperty]
+    private string _errorDialogMessage = string.Empty;
+
+    [RelayCommand]
+    public void CloseErrorDialog()
+    {
+        IsErrorDialogVisible = false;
+    }
+
+    public void ShowError(string title, string message)
+    {
+        Avalonia.Threading.Dispatcher.UIThread.Post(() => 
+        {
+            ErrorDialogTitle = title;
+            ErrorDialogMessage = message;
+            IsErrorDialogVisible = true;
+        });
     }
 
     [RelayCommand]

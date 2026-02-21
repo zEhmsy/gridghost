@@ -13,9 +13,11 @@
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
             <TextBlock Text="Points Monitor" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
             <Button Content="Refresh" Command="{Binding RefreshCommand}"/>
+            <Button Content="Save" Command="{Binding SaveCommand}" IsEnabled="{Binding IsDirty}" Background="#44ff44" Foreground="Black" FontWeight="Bold"/>
+            <TextBlock Text="Unsaved changes" IsVisible="{Binding IsDirty}" Foreground="#ffaa00" VerticalAlignment="Center" Margin="5,0,0,0" FontStyle="Italic"/>
         </StackPanel>
 
-        <DataGrid ItemsSource="{Binding Points}" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="Gray">
+        <DataGrid ItemsSource="{Binding Points}" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="Gray" CanUserResizeColumns="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Device" Binding="{Binding DeviceName}" IsReadOnly="True" Width="150"/>
                 <DataGridTextColumn Header="Key" Binding="{Binding Key}" IsReadOnly="True" Width="150"/>

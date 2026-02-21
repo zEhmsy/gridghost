@@ -37,8 +37,19 @@ public class LinkedDataStore : ISlaveDataStore
                 default: continue;
             }
 
-            if (!target.ContainsKey(addr)) target[addr] = new List<PointDefinition>();
-            target[addr].Add(p);
+            int numRegs = 1;
+            if (p.Modbus.Kind.Trim().ToLower() == "holding" || p.Modbus.Kind.Trim().ToLower() == "input")
+            {
+                if (p.Type == "int32" || p.Type == "uint32" || p.Type == "float") 
+                    numRegs = 2;
+            }
+
+            for (int i = 0; i < numRegs; i++)
+            {
+                ushort a = (ushort)(addr + i);
+                if (!target.ContainsKey(a)) target[a] = new List<PointDefinition>();
+                target[a].Add(p);
+            }
         }
 
         CoilDiscretes = new ModbusPointSource<bool>(pointStore, instance.Id, coils, PointSource.RemoteWrite);
@@ -178,7 +189,45 @@ public class ModbusPointSource<T> : IPointSource<T>
                     }
                     else
                     {
-                        finalReg = (ushort)Math.Round(d * scale);
+                        // Handle 32-bit spanning
+                        if (def.Type == "float" || def.Type == "int32" || def.Type == "uint32")
+                        {
+                            int offset = addr - def.Modbus!.Address;
+                            ushort word0, word1;
+                            
+                            if (def.Type == "float")
+                            {
+                                byte[] b = BitConverter.GetBytes((float)(d * scale));
+                                word0 = (ushort)(b[0] | (b[1] << 8));
+                                word1 = (ushort)(b[2] | (b[3] << 8));
+                            }
+                            else if (def.Type == "int32")
+                            {
+                                byte[] b = BitConverter.GetBytes((int)Math.Round(d * scale));
+                                word0 = (ushort)(b[0] | (b[1] << 8));
+                                word1 = (ushort)(b[2] | (b[3] << 8));
+                            }
+                            else // uint32
+                            {
+                                byte[] b = BitConverter.GetBytes((uint)Math.Round(d * scale));
+                                word0 = (ushort)(b[0] | (b[1] << 8));
+                                word1 = (ushort)(b[2] | (b[3] << 8));
+                            }
+
+                            // Modbus typically sends high word first in 32-bit unless swapped. 
+                            // CDAB or ABCD. Let's assume standard ABCD (High Word first)
+                            // Wait, ABCD would mean word1 is at addr, word0 is at addr+1
+                            // Modbus standard for 32-bit floats is often Big-Endian (ABCD)
+                            finalReg = offset == 0 ? word1 : word0;
+                        }
+                        else 
+                        {
+                            // 16-bit
+                            if (def.Type == "uint16")
+                                finalReg = (ushort)Math.Round(d * scale);
+                            else
+                                finalReg = (ushort)(short)Math.Round(d * scale);
+                        }
                         break; 
                     }
                 }
@@ -202,7 +251,52 @@ public class ModbusPointSource<T> : IPointSource<T>
                         throw new IllegalDataValueException();
                     }
 
-                    var val = ConvertFromModbus(points[i], def);
+                    object val;
+                    if (typeof(T) == typeof(ushort) && (def.Type == "float" || def.Type == "int32" || def.Type == "uint32"))
+                    {
+                        var pt = _store.GetValue(_deviceId, def.Key);
+                        double currentVal = Convert.ToDouble(pt.Value ?? 0);
+                        double scale = def.Modbus?.Scale ?? 1.0;
+                        
+                        ushort word0, word1;
+                        if (def.Type == "float") {
+                            byte[] b = BitConverter.GetBytes((float)(currentVal * scale));
+                            word0 = (ushort)(b[0] | (b[1] << 8));
+                            word1 = (ushort)(b[2] | (b[3] << 8));
+                        } else if (def.Type == "int32") {
+                            byte[] b = BitConverter.GetBytes((int)Math.Round(currentVal * scale));
+                            word0 = (ushort)(b[0] | (b[1] << 8));
+                            word1 = (ushort)(b[2] | (b[3] << 8));
+                        } else {
+                            byte[] b = BitConverter.GetBytes((uint)Math.Round(currentVal * scale));
+                            word0 = (ushort)(b[0] | (b[1] << 8));
+                            word1 = (ushort)(b[2] | (b[3] << 8));
+                        }
+                        
+                        int offset = addr - def.Modbus!.Address;
+                        ushort newReg = (ushort)(object)points[i];
+                        
+                        // ABCD Big -Endien Default Setup
+                        if (offset == 0) word1 = newReg; else word0 = newReg;
+                        
+                        byte[] newBytes = new byte[4];
+                        newBytes[0] = (byte)(word0 & 0xFF);
+                        newBytes[1] = (byte)(word0 >> 8);
+                        newBytes[2] = (byte)(word1 & 0xFF);
+                        newBytes[3] = (byte)(word1 >> 8);
+                        
+                        if (def.Type == "float") 
+                            val = (double)BitConverter.ToSingle(newBytes, 0) / scale;
+                        else if (def.Type == "int32") 
+                            val = (double)BitConverter.ToInt32(newBytes, 0) / scale;
+                        else 
+                            val = (double)BitConverter.ToUInt32(newBytes, 0) / scale;
+                    }
+                    else
+                    {
+                        val = ConvertFromModbus(points[i], def);
+                    }
+
                     _store.SetValue(_deviceId, def.Key, val, _writeSource);
 
                     if (def.OverrideMode == ExternalWriteOverrideMode.ForceStatic && def.Generator != null)

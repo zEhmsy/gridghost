@@ -35,6 +35,13 @@ public partial class TemplateEditorViewModel : ViewModelBase
     [ObservableProperty]
     private bool _hasErrors;
 
+    [ObservableProperty]
+    private bool _isDirty;
+
+    partial void OnNameChanged(string value) { IsDirty = true; Validate(); }
+    partial void OnProtocolChanged(ProtocolType value) { IsDirty = true; Validate(); }
+    partial void OnDefaultPortChanged(int value) { IsDirty = true; Validate(); }
+
     public TemplateEditorViewModel(DeviceTemplate template)
     {
         _template = template;
@@ -46,6 +53,11 @@ public partial class TemplateEditorViewModel : ViewModelBase
         _points = new ObservableCollection<PointEditorViewModel>(
             template.Points.Select(p => new PointEditorViewModel(p))
         );
+
+        foreach (var point in _points)
+        {
+            point.PropertyChanged += (s, e) => { IsDirty = true; Validate(); };
+        }
         
         Validate();
         
@@ -73,7 +85,10 @@ public partial class TemplateEditorViewModel : ViewModelBase
             Name = "New Point",
             Modbus = new ModbusPointConfig { Address = 0, Kind = "Holding" }
         };
-        Points.Add(new PointEditorViewModel(newPoint));
+        var vm = new PointEditorViewModel(newPoint);
+        vm.PropertyChanged += (s, e) => { IsDirty = true; Validate(); };
+        Points.Add(vm);
+        IsDirty = true;
         Validate();
     }
 
@@ -83,6 +98,7 @@ public partial class TemplateEditorViewModel : ViewModelBase
         if (point != null && Points.Contains(point))
         {
             Points.Remove(point);
+            IsDirty = true;
             Validate();
         }
     }

@@ -55,9 +55,11 @@ public class TemplateRepository
     public async Task SaveAsync(DeviceTemplate template)
     {
         var filePath = Path.Combine(_templatesPath, $"{template.Id}.json");
+        var tempPath = filePath + ".tmp";
         var options = new JsonSerializerOptions { WriteIndented = true };
         var json = JsonSerializer.Serialize(template, options);
-        await File.WriteAllTextAsync(filePath, json);
+        await File.WriteAllTextAsync(tempPath, json);
+        File.Move(tempPath, filePath, true);
     }
 
     public void Delete(string templateId)

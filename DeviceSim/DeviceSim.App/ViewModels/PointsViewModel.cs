@@ -11,7 +11,7 @@ using Avalonia.Threading;
 
 namespace DeviceSim.App.ViewModels;
 
-public partial class PointsViewModel : ViewModelBase
+public partial class PointsViewModel : ViewModelBase, IChangeTracker
 {
     private readonly IPointStore _pointStore;
     private readonly DeviceManager _deviceManager;
@@ -20,6 +20,9 @@ public partial class PointsViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _filterText = "";
+
+    [ObservableProperty]
+    private bool _isDirty;
 
     public PointsViewModel(IPointStore pointStore, DeviceManager deviceManager)
     {
@@ -42,9 +45,25 @@ public partial class PointsViewModel : ViewModelBase
             {
                 if (_pointStore.TryGetValue(device.Id, pointDef.Key, out var val))
                 {
-                    Points.Add(new PointViewModel(device, pointDef, val, _pointStore, _deviceManager));
+                    var vm = new PointViewModel(device, pointDef, val, _pointStore, _deviceManager);
+                    vm.PropertyChanged += PointViewModel_PropertyChanged;
+                    Points.Add(vm);
                 }
             }
+        }
+        IsDirty = false;
+    }
+
+    private void PointViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        // Don't mark dirty for standard real-time value updates coming from the backend simulation
+        if (e.PropertyName != nameof(PointViewModel.Value) && 
+            e.PropertyName != nameof(PointViewModel.DisplayValue) &&
+            e.PropertyName != nameof(PointViewModel.EffectiveDisplayValue) &&
+            e.PropertyName != nameof(PointViewModel.LastUpdated) &&
+            e.PropertyName != nameof(PointViewModel.Source))
+        {
+            IsDirty = true;
         }
     }
 
@@ -58,7 +77,15 @@ public partial class PointsViewModel : ViewModelBase
 
     private void OnDeviceUpdated(DeviceInstance instance)
     {
-        Dispatcher.UIThread.Post(RefreshPoints); // Brute force refresh for simplicity
+        Dispatcher.UIThread.Post(() => {
+            // Update IsEditingAllowed for the points of this device instead of full refresh
+            // to avoid losing unsaved user edits.
+            bool isAllowed = instance.State != DeviceInstance.DeviceState.Running;
+            foreach (var p in Points.Where(pt => pt.DeviceId == instance.Id))
+            {
+                p.IsEditingAllowed = isAllowed;
+            }
+        });
     }
 
     private void OnPointChanged(string deviceId, string key, PointValue val)
@@ -75,6 +102,30 @@ public partial class PointsViewModel : ViewModelBase
 
     [RelayCommand]
     public void Refresh() => RefreshPoints();
+
+    [RelayCommand]
+    public async Task Save()
+    {
+        await SaveChangesAsync();
+    }
+
+    public async Task<bool> SaveChangesAsync()
+    {
+        // Force commit of all SetValue properties (since SetValue is usually called manually, we ensure generator properties are set on the models)
+        foreach (var p in Points)
+        {
+            await p.CommitConfigAsync();
+        }
+        _deviceManager.SaveAll();
+        IsDirty = false;
+        return true;
+    }
+
+    public void DiscardChanges()
+    {
+        IsDirty = false;
+        RefreshPoints();
+    }
 }
 
 public partial class PointViewModel : ObservableObject
@@ -207,21 +258,8 @@ public partial class PointViewModel : ObservableObject
     [RelayCommand]
     public async Task SetValue(object? input)
     {
-        // 1. Update Config (Config is bound TwoWay, so mostly already updated, but we ensure persistence)
+        await CommitConfigAsync(); // Save properties
         
-        if (_def.Type != Type) { _def.Type = Type; }
-        
-        if (_def.Generator == null) _def.Generator = new GeneratorConfig();
-        
-        if (_def.Generator.Type != GenType) 
-        { 
-            _def.Generator.Type = GenType; 
-            IsStatic = GenType == "static";
-        }
-        if (Math.Abs(_def.Generator.Min - GenMin) > 0.001) { _def.Generator.Min = GenMin; }
-        if (Math.Abs(_def.Generator.Max - GenMax) > 0.001) { _def.Generator.Max = GenMax; }
-        if (Math.Abs(_def.Generator.PeriodSeconds - GenPeriod) > 0.001) { _def.Generator.PeriodSeconds = GenPeriod; }
-
         // 2. Set Value ONLY if Static
         if (IsStatic && input != null)
         {
@@ -238,7 +276,24 @@ public partial class PointViewModel : ObservableObject
             
              _store.SetValue(DeviceId, Key, val, PointSource.Manual, disp);
         }
+    }
+
+    public Task CommitConfigAsync()
+    {
+        // 1. Update Config (Config is bound TwoWay, so mostly already updated, but we ensure persistence)
+        if (_def.Type != Type) { _def.Type = Type; }
         
-        await Task.CompletedTask;
+        if (_def.Generator == null) _def.Generator = new GeneratorConfig();
+        
+        if (_def.Generator.Type != GenType) 
+        { 
+            _def.Generator.Type = GenType; 
+            IsStatic = GenType == "static";
+        }
+        if (Math.Abs(_def.Generator.Min - GenMin) > 0.001) { _def.Generator.Min = GenMin; }
+        if (Math.Abs(_def.Generator.Max - GenMax) > 0.001) { _def.Generator.Max = GenMax; }
+        if (Math.Abs(_def.Generator.PeriodSeconds - GenPeriod) > 0.001) { _def.Generator.PeriodSeconds = GenPeriod; }
+
+        return Task.CompletedTask;
     }
 }

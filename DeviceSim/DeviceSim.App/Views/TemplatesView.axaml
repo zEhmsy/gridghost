@@ -123,6 +123,14 @@
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
 
+                                    <DataGridTemplateColumn Header="Override" Width="110">
+                                         <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox ItemsSource="{Binding OverrideModes}" SelectedItem="{Binding OverrideMode}" HorizontalAlignment="Stretch"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Grid>

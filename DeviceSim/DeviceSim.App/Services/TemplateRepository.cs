@@ -60,11 +60,6 @@ public class TemplateRepository
 
     public async Task SaveAsync(DeviceTemplate template)
     {
-        // Atomic Save
-        // 1. Write to .tmp
-        // 2. Move to .json (overwrite)
-        
-        // Sanitize ID for filename
         string filename = template.Id;
         foreach (char c in Path.GetInvalidFileNameChars())
         {
@@ -79,11 +74,7 @@ public class TemplateRepository
 
         await File.WriteAllTextAsync(tempPath, json);
         
-        if (File.Exists(targetPath))
-        {
-            File.Delete(targetPath);
-        }
-        File.Move(tempPath, targetPath);
+        File.Move(tempPath, targetPath, true);
     }
 
     public void Delete(string templateId)
