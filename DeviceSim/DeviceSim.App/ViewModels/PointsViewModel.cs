@@ -209,21 +209,46 @@ public partial class PointViewModel : ObservableObject
             if (SetProperty(ref _value, value))
             {
                 OnPropertyChanged(nameof(EffectiveDisplayValue));
+                OnPropertyChanged(nameof(StringValue));
+                OnPropertyChanged(nameof(BoolValue));
 
                 if (IsStatic)
                 {
                     object val = value;
                     if (value is string str)
                     {
-                        if (double.TryParse(str, out double d)) val = d;
+                        if (double.TryParse(str, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double d)) val = d;
                         else if (bool.TryParse(str, out bool b)) val = b;
                     }
                     string disp = val.ToString() ?? "";
-                    if (val is double dv) disp = dv.ToString("F2");
+                    if (val is double dv) disp = dv.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
                     
                     _store.SetValue(DeviceId, Key, val, PointSource.Manual, disp);
                 }
             }
+        }
+    }
+
+    public string StringValue
+    {
+        get => Value?.ToString() ?? "0";
+        set 
+        {
+            if (_def.Type == "bool") return;
+            if (double.TryParse(value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double d))
+            {
+                Value = d;
+            }
+        }
+    }
+
+    public bool BoolValue
+    {
+        get => Value is bool b ? b : false;
+        set 
+        {
+            if (_def.Type != "bool") return;
+            Value = value;
         }
     }
     [ObservableProperty] private string? _displayValue;
@@ -279,10 +304,16 @@ public partial class PointViewModel : ObservableObject
         {
             if (Value == null) return "-";
             
-            if (Value is bool b) return b ? "True" : "False";
+            if (_def.Type == "bool") 
+            {
+                if (Value is bool b) return b ? "True" : "False";
+                return "False"; // Deterministic fallback
+            }
             
-            if (Value is double d) return d.ToString("F2");
-            if (Value is float f) return f.ToString("F2");
+            // Numeric formatting
+            if (Value is double d) return d.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+            if (Value is float f) return f.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+            if (Value is int i) return i.ToString(System.Globalization.CultureInfo.InvariantCulture);
             
             return Value.ToString() ?? "";
         }
@@ -338,6 +369,9 @@ public partial class PointViewModel : ObservableObject
         {
             _value = val.Value;
             OnPropertyChanged(nameof(Value));
+            OnPropertyChanged(nameof(StringValue));
+            OnPropertyChanged(nameof(BoolValue));
+            OnPropertyChanged(nameof(EffectiveDisplayValue));
         }
         DisplayValue = val.DisplayValue;
         OverrideStatus = val.OverrideStatus;

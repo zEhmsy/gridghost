@@ -126,6 +126,9 @@ namespace DeviceSim.SmokeRunner
 
                 // 6. HoldForSeconds Override
                 allPassed &= await TestHoldForSecondsOverride(master, (byte)slaveId, 30, device.Points.Find(p => p.Key == "H30"));
+
+                // 7. Store Type Guard Enforcement
+                allPassed &= TestStoreTypeEnforcement(pointStore, device.Id);
             }
             
             cts.Cancel();
@@ -339,6 +342,32 @@ namespace DeviceSim.SmokeRunner
                 await Task.Delay(2100); // Wait for timer (2s)
                 
                 if (point.Generator?.Type != "random") throw new Exception("Expected generator to return to random after hold");
+                
+                Console.WriteLine("PASS");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"FAIL ({ex.Message})");
+                return false;
+            }
+        }
+
+        static bool TestStoreTypeEnforcement(DeviceSim.Core.Interfaces.IPointStore store, string deviceId)
+        {
+            try
+            {
+                Console.Write("[TEST] Direct UI/Store Type Guard Enforcement: ");
+                
+                // Intentionally attempt to assign a bool directly to a numeric point,
+                // simulating Avalonia DataGrid virtualization corrupting the binding.
+                store.SetValue(deviceId, "H10", true, DeviceSim.Core.Models.PointSource.Manual);
+                
+                var pt = store.GetValue(deviceId, "H10");
+                if (pt.Value is bool) 
+                {
+                    throw new Exception("Guard failed! Store allowed boolean assignment to numeric point H10.");
+                }
                 
                 Console.WriteLine("PASS");
                 return true;

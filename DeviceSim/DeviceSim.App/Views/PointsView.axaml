@@ -96,12 +96,12 @@
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Panel Margin="5,0">
-                                                        <TextBox Name="ValInput" Text="{Binding Value, Mode=TwoWay}" 
+                                                        <TextBox Name="ValInput" Text="{Binding StringValue, Mode=TwoWay}" 
                                                                  IsEnabled="{Binding IsEditingAllowed}"
                                                                  IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='!bool'}"
                                                                  VerticalAlignment="Center"/>
                                                         
-                                                        <CheckBox IsChecked="{Binding Value, Mode=TwoWay}" 
+                                                        <CheckBox IsChecked="{Binding BoolValue, Mode=TwoWay}" 
                                                                   IsEnabled="{Binding IsEditingAllowed}"
                                                                   IsVisible="{Binding Type, Converter={StaticResource TypeToBoolConverter}, ConverterParameter='bool'}"
                                                                   VerticalAlignment="Center"/>
