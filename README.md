@@ -1,9 +1,9 @@
 # GridGhost 👻
 
-[![GitHub License](https://img.shields.io/github/license/zEhmsy/gridghost?style=flat-square&logo=apache&color=orange)](https://github.com/zEhmsy/gridghost/blob/main/LICENSE)
+[![GitHub License](https://img.shields.io/badge/license-Apache%202.0-orange?style=flat-square&logo=apache)](https://github.com/zEhmsy/gridghost/blob/main/LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/zEhmsy/gridghost?style=flat-square&logo=github)](https://github.com/zEhmsy/gridghost/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/zEhmsy/gridghost?style=flat-square&logo=github)](https://github.com/zEhmsy/gridghost/network/members)
-[![GitHub Issues](https://img.shields.io/github/issues/zEhmsy/gridghost?style=flat-square&logo=github)](https://github.com/zEhmsy/gridghost/issues)
+[![GitHub Issues](https://img.shields.io/badge/issues-GitHub-blue?style=flat-square&logo=github)](https://github.com/zEhmsy/gridghost/issues)
 
 [![.NET Version](https://img.shields.io/badge/.NET-8.0-512bd4?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/download/dotnet/8.0)
 [![Language](https://img.shields.io/badge/Language-C%23-239120?style=flat-square&logo=c-sharp)](https://docs.microsoft.com/en-us/dotnet/csharp/)
@@ -18,7 +18,7 @@ GridGhost is a lightweight, high-performance Modbus (and soon BACnet) device sim
 > [!IMPORTANT]
 > **Platform Support**: The current release provides a native **Windows Installer**. However, since GridGhost is built on .NET 8 and Avalonia UI, support for **Linux** and **macOS** is in the roadmap and technically compatible.
 
-![GridGhost Logo](DeviceSim/DeviceSim.App/Assets/Icons/gridghost_icon.png)
+<img src="DeviceSim/DeviceSim.App/Assets/Icons/gridghost_icon.png" width="128" alt="GridGhost Logo" />
 
 ## Features
 
