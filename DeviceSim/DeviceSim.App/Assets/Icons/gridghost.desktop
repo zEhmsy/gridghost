@@ -1,8 +1,8 @@
 [Desktop Entry]
 Name=GridGhost
 Comment=Modbus Device Simulator
-Exec=DeviceSim.App
-Icon=gridghost
+Exec=GridGhost
+Icon=gridghost_icon
 Type=Application
 Categories=Utility;Network;
-StartupWMClass=DeviceSim.App
+StartupWMClass=GridGhost
