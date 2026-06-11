@@ -5,18 +5,19 @@
     <Nullable>enable</Nullable>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <Version>2.1.0</Version>
+    <AssemblyName>GridGhost</AssemblyName>
   </PropertyGroup>
 
-  <!-- Windows-only settings -->
-  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+  <!-- Windows settings (active when compiling on Windows OR targeting a Windows RID) -->
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows')) Or ('$(RuntimeIdentifier)' != '' And $(RuntimeIdentifier.StartsWith('win')))">
     <OutputType>WinExe</OutputType>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets/Icons/gridghost_icon.ico</ApplicationIcon>
   </PropertyGroup>
 
-  <!-- Linux / macOS -->
-  <PropertyGroup Condition="!$([MSBuild]::IsOSPlatform('Windows'))">
+  <!-- Linux / macOS settings -->
+  <PropertyGroup Condition="!$([MSBuild]::IsOSPlatform('Windows')) And ('$(RuntimeIdentifier)' == '' Or !$(RuntimeIdentifier.StartsWith('win')))">
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 

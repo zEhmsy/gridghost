@@ -41,7 +41,7 @@ public partial class SplashWindowViewModel : ObservableObject, IDisposable
         {
             for (int i = 1; i <= FrameCount; i++)
             {
-                var uri = new Uri($"avares://DeviceSim.App/Assets/splash_frames/ezgif-frame-{i:D3}.png");
+                var uri = new Uri($"avares://GridGhost/Assets/splash_frames/ezgif-frame-{i:D3}.png");
                 if (AssetLoader.Exists(uri))
                 {
                     using var stream = AssetLoader.Open(uri);
@@ -65,7 +65,7 @@ public partial class SplashWindowViewModel : ObservableObject, IDisposable
     {
          try
          {
-             var uri = new Uri("avares://DeviceSim.App/Assets/Icons/gridghost_icon.ico");
+             var uri = new Uri("avares://GridGhost/Assets/Icons/gridghost_icon.ico");
              if (AssetLoader.Exists(uri))
              {
                  using var stream = AssetLoader.Open(uri);

@@ -8,7 +8,7 @@
         x:Class="DeviceSim.App.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Title="GridGhost"
-        Icon="avares://DeviceSim.App/Assets/Icons/gridghost_icon.ico">
+        Icon="avares://GridGhost/Assets/Icons/gridghost_icon.ico">
 
     <Window.Resources>
         <conv:SidebarWidthConverter x:Key="SidebarWidthConverter"/>

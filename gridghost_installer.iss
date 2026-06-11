@@ -4,7 +4,7 @@
 [Setup]
 AppId={{D37B1C6E-42E1-4D3B-BA3A-8B2376C68551}
 AppName=GridGhost
-AppVersion=1.3.0
+AppVersion=2.1.0
 AppPublisher=zEhmsy
 DefaultDirName={autopf}\GridGhost
 DefaultGroupName=GridGhost
@@ -25,14 +25,14 @@ Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "DeviceSim\DeviceSim.App\Publish\win-x64\DeviceSim.App.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "DeviceSim\DeviceSim.App\Publish\win-x64\GridGhost.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "DeviceSim\DeviceSim.App\Publish\win-x64\Templates\*"; DestDir: "{app}\Templates"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\GridGhost"; Filename: "{app}\DeviceSim.App.exe"
+Name: "{group}\GridGhost"; Filename: "{app}\GridGhost.exe"
 Name: "{group}\{cm:UninstallProgram,GridGhost}"; Filename: "{uninstallexe}"
-Name: "{commondesktop}\GridGhost"; Filename: "{app}\DeviceSim.App.exe"; Tasks: desktopicon
+Name: "{commondesktop}\GridGhost"; Filename: "{app}\GridGhost.exe"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\DeviceSim.App.exe"; Description: "{cm:LaunchProgram,GridGhost}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\GridGhost.exe"; Description: "{cm:LaunchProgram,GridGhost}"; Flags: nowait postinstall skipifsilent

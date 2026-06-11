@@ -8,7 +8,7 @@
         SystemDecorations="None"
         WindowStartupLocation="CenterScreen"
         Topmost="True"
-        Background="Transparent"
+        Background="{x:Null}"
         TransparencyLevelHint="Transparent">
 
     <Panel>

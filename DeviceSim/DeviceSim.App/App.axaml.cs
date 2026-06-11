@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using Avalonia.Data.Core.Plugins;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace DeviceSim.App;
 
@@ -120,5 +121,44 @@ public partial class App : Application
         services.AddTransient<PointsViewModel>();
         services.AddTransient<TemplatesViewModel>();
         services.AddTransient<LogsViewModel>();
+    }
+
+    public void OnAboutMenuClick(object? sender, EventArgs e)
+    {
+        WeakReferenceMessenger.Default.Send(new ShowErrorDialogMessage("About GridGhost", "GridGhost Device Simulator\nVersion 2.1.0\n\nA lightweight, high-performance Modbus device simulator."));
+    }
+
+    public void OnDevicesMenuClick(object? sender, EventArgs e)
+    {
+        WeakReferenceMessenger.Default.Send(new NavigationMessage("Devices"));
+    }
+
+    public void OnPointsMenuClick(object? sender, EventArgs e)
+    {
+        WeakReferenceMessenger.Default.Send(new NavigationMessage("Points"));
+    }
+
+    public void OnTemplatesMenuClick(object? sender, EventArgs e)
+    {
+        WeakReferenceMessenger.Default.Send(new NavigationMessage("Templates"));
+    }
+
+    public void OnLogsMenuClick(object? sender, EventArgs e)
+    {
+        WeakReferenceMessenger.Default.Send(new NavigationMessage("Logs"));
+    }
+
+    public void OnCoffeeMenuClick(object? sender, EventArgs e)
+    {
+        try
+        {
+            var url = "https://www.buymeacoffee.com/gturturro";
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+        }
+        catch { /* ignored */ }
     }
 }
