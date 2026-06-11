@@ -42,8 +42,22 @@ public partial class MainViewModel : ViewModelBase
     public ViewModelBase CurrentView
     {
         get => _currentView;
-        set => SetProperty(ref _currentView, value);
+        set
+        {
+            if (SetProperty(ref _currentView, value))
+            {
+                OnPropertyChanged(nameof(IsDevicesActive));
+                OnPropertyChanged(nameof(IsPointsActive));
+                OnPropertyChanged(nameof(IsTemplatesActive));
+                OnPropertyChanged(nameof(IsLogsActive));
+            }
+        }
     }
+
+    public bool IsDevicesActive => CurrentView == DevicesView || CurrentView == PointMapView;
+    public bool IsPointsActive => CurrentView == PointsView;
+    public bool IsTemplatesActive => CurrentView == TemplatesView;
+    public bool IsLogsActive => CurrentView == LogsView;
 
     public ICommand NavigateCommand { get; }
 

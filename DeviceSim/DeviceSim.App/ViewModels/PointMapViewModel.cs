@@ -51,6 +51,12 @@ public partial class PointMapViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public void NavigateToDevices()
+    {
+        WeakReferenceMessenger.Default.Send(new NavigationMessage("Devices"));
+    }
+
+    [RelayCommand]
     public void Refresh()
     {
         UpdatePoints();

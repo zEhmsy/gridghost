@@ -110,6 +110,12 @@ public partial class PointsViewModel : ViewModelBase, IChangeTracker
 
     public bool IsDeviceDirty(string deviceId) => _dirtyDeviceIds.Contains(deviceId);
 
+    [RelayCommand]
+    public void NavigateToDevices()
+    {
+        WeakReferenceMessenger.Default.Send(new NavigationMessage("Devices"));
+    }
+
     private void OnDeviceRemoved(string deviceId)
     {
         Dispatcher.UIThread.Post(() => {

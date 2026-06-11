@@ -9,8 +9,15 @@
     <Border Classes="MainPanel">
         <DockPanel>
             <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="15" Margin="0,0,0,20">
-                <TextBlock Text="Modbus Point Map" FontSize="22" FontWeight="SemiBold"/>
-                <Button Content="Refresh Map" Command="{Binding RefreshCommand}" IsVisible="{Binding IsDeviceSelected}" Padding="15,6"/>
+                <Button Command="{Binding NavigateToDevicesCommand}" 
+                        Background="Transparent" BorderThickness="0" Padding="4"
+                        ToolTip.Tip="Back to Devices"
+                        VerticalAlignment="Center">
+                    <Path Data="M20,11H7.83L13.42,5.41L12,4L4,12L12,20L13.41,18.59L7.83,13H20V11Z" 
+                          Fill="{StaticResource TextSecondary}" Stretch="Uniform" Width="20" Height="20"/>
+                </Button>
+                <TextBlock Text="Modbus Point Map" FontSize="22" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <Button Content="Refresh Map" Command="{Binding RefreshCommand}" IsVisible="{Binding IsDeviceSelected}" Padding="15,6" CornerRadius="8"/>
             </StackPanel>
             
             <Panel>

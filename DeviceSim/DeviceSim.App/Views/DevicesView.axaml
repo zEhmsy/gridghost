@@ -40,11 +40,20 @@
                     <DataGridTemplateColumn Header="Name" Width="*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="10,0">
-                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontWeight="Medium"/>
-                                    <Button Content="✏️" ToolTip.Tip="Edit points" Command="{Binding OpenPointsCommand}" Background="Transparent" BorderThickness="0" Padding="4"/>
-                                    <Button Content="🗺️" ToolTip.Tip="Open Niagara map" Command="{Binding OpenPointMapCommand}" Background="Transparent" BorderThickness="0" Padding="4"/>
-                                </StackPanel>
+                                <TextBlock Text="{Binding Name}" 
+                                           FontWeight="Medium" 
+                                           VerticalAlignment="Center" 
+                                           Margin="10,0"
+                                           Cursor="Hand"
+                                           DoubleTapped="OnNameDoubleTapped"
+                                           ToolTip.Tip="Double-click to open Niagara map">
+                                    <TextBlock.Styles>
+                                        <Style Selector="TextBlock:pointerover">
+                                            <Setter Property="TextDecorations" Value="Underline"/>
+                                            <Setter Property="Foreground" Value="{StaticResource AccentMain}"/>
+                                        </Style>
+                                    </TextBlock.Styles>
+                                </TextBlock>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -61,10 +70,49 @@
                     </DataGridTemplateColumn>
                     <DataGridTextColumn Header="Last Error" Binding="{Binding LastError}" IsReadOnly="True" Width="*"/>
                     <DataGridTemplateColumn Header="Actions" Width="120">
-                         <DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Button Content="Remove" Classes="Danger" Padding="10,5"
-                                        Command="{Binding $parent[UserControl].((vm:DevicesViewModel)DataContext).RemoveCommand}" CommandParameter="{Binding}" />
+                                <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Right" Margin="0,0,10,0">
+                                    <!-- Edit points -->
+                                    <Button Command="{Binding OpenPointsCommand}"
+                                            Background="Transparent" BorderThickness="0" Padding="6" CornerRadius="4"
+                                            ToolTip.Tip="Edit points">
+                                        <Button.Styles>
+                                            <Style Selector="Button:pointerover Path">
+                                                <Setter Property="Fill" Value="{StaticResource AccentMain}"/>
+                                            </Style>
+                                        </Button.Styles>
+                                        <Path Data="M14.06,9L15,9.94L5.92,19H5V18.08L14.06,9M17.66,3C17.41,3 17.15,3.1 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18.17,3.09 17.92,3 17.66,3M14.06,6.19L3,17.25V21H6.75L17.81,9.94L14.06,6.19Z"
+                                              Fill="{StaticResource TextSecondary}" Stretch="Uniform" Width="16" Height="16"/>
+                                    </Button>
+                                    
+                                    <!-- Niagara Map -->
+                                    <Button Command="{Binding OpenPointMapCommand}"
+                                            Background="Transparent" BorderThickness="0" Padding="6" CornerRadius="4"
+                                            ToolTip.Tip="Open Niagara map">
+                                        <Button.Styles>
+                                            <Style Selector="Button:pointerover Path">
+                                                <Setter Property="Fill" Value="{StaticResource AccentMain}"/>
+                                            </Style>
+                                        </Button.Styles>
+                                        <Path Data="M15,9l-6,-3l-6,3v12l6,-3l6,3v-12z M15,19l-5,-2.5v-10.5l5,2.5v10.5z"
+                                              Fill="{StaticResource TextSecondary}" Stretch="Uniform" Width="16" Height="16"/>
+                                    </Button>
+
+                                    <!-- Remove -->
+                                    <Button Command="{Binding $parent[UserControl].((vm:DevicesViewModel)DataContext).RemoveCommand}"
+                                            CommandParameter="{Binding}"
+                                            Background="Transparent" BorderThickness="0" Padding="6" CornerRadius="4"
+                                            ToolTip.Tip="Remove device">
+                                        <Button.Styles>
+                                            <Style Selector="Button:pointerover Path">
+                                                <Setter Property="Fill" Value="{StaticResource DangerMain}"/>
+                                            </Style>
+                                        </Button.Styles>
+                                        <Path Data="M6,19C6,20.1 6.9,21 8,21H16C17.1,21 18,20.1 18,19V7H6V19M8,9H16V19H8V9M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z"
+                                              Fill="{StaticResource TextSecondary}" Stretch="Uniform" Width="16" Height="16"/>
+                                    </Button>
+                                </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

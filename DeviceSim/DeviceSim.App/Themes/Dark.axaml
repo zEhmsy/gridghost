@@ -33,6 +33,12 @@
         <Setter Property="Height" Value="45"/>
         <Setter Property="Padding" Value="10,0"/>
         <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                <BrushTransition Property="Foreground" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
                 <ContentPresenter Name="PART_ContentPresenter"
@@ -49,7 +55,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="Button.SidebarItem:pointerover /template/ ContentPresenter">
+    <Style Selector="Button.SidebarItem:pointerover">
         <Setter Property="Background" Value="#252525"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
     </Style>
@@ -66,6 +72,13 @@
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="CornerRadius" Value="8"/>
     </Style>
+    <Style Selector="Button.Accent /template/ ContentPresenter">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
     <Style Selector="Button.Accent:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="{StaticResource AccentHover}"/>
     </Style>
@@ -75,6 +88,13 @@
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="CornerRadius" Value="8"/>
+    </Style>
+    <Style Selector="Button.Danger /template/ ContentPresenter">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
     </Style>
     <Style Selector="Button.Danger:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="#ff6666"/>
