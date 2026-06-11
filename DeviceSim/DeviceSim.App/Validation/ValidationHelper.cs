@@ -13,7 +13,7 @@ public static class ValidationHelper
 
         if (string.IsNullOrWhiteSpace(template.Name))
         {
-            errors.Add("Template Name is required.");
+            errors.Add("Name is required.");
         }
 
         // Validate Points

@@ -43,7 +43,8 @@ public class DeviceInstance
             Network = new NetworkConfig 
             { 
                 Port = template.Network.Port, 
-                BindIp = template.Network.BindIp 
+                BindIp = template.Network.BindIp,
+                DeviceAddress = template.Network.DeviceAddress
             },
             Bacnet = template.Bacnet != null ? new BacnetDeviceConfig 
             { 
@@ -54,7 +55,7 @@ public class DeviceInstance
             {
                 Key = p.Key,
                 Name = p.Name,
-                Type = p.Type,
+                Type = p.Type == "float32" ? "float" : p.Type,
                 NiagaraType = p.NiagaraType,
                 Unit = p.Unit,
                 Access = p.Access,

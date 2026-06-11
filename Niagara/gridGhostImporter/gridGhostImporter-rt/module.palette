@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bajaObjectGraph version="4.0">
+  <p m="b=baja" t="b:UnrestrictedFolder">
+    <p n="GridGhostImportService" m="ggi=gridGhostImporter" t="ggi:GridGhostImportService"/>
+  </p>
+</bajaObjectGraph>

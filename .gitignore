@@ -2,6 +2,7 @@
 bin/
 obj/
 Publish/
+.gradle/
 
 # OS
 .DS_Store

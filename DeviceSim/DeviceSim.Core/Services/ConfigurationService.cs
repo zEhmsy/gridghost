@@ -10,10 +10,25 @@ public class UiConfig
     public bool SidebarCollapsed { get; set; } = false;
 }
 
+public class NiagaraExportConfig
+{
+    public string ExportHost { get; set; } = "127.0.0.1";
+    public string ExportPath { get; set; } = GetDefaultExportPath();
+
+    public static string GetDefaultExportPath()
+    {
+        return Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            "GridGhost",
+            "niagara-manifest.json");
+    }
+}
+
 public class AppConfig
 {
     public List<DeviceInstance> Devices { get; set; } = new();
     public UiConfig Ui { get; set; } = new();
+    public NiagaraExportConfig NiagaraExport { get; set; } = new();
 }
 
 public class ConfigurationService
@@ -76,6 +91,16 @@ public class ConfigurationService
             if (config != null)
             {
                 CurrentConfig = config;
+                CurrentConfig.Ui ??= new UiConfig();
+                CurrentConfig.NiagaraExport ??= new NiagaraExportConfig();
+                if (string.IsNullOrWhiteSpace(CurrentConfig.NiagaraExport.ExportPath))
+                {
+                    CurrentConfig.NiagaraExport.ExportPath = NiagaraExportConfig.GetDefaultExportPath();
+                }
+                if (string.IsNullOrWhiteSpace(CurrentConfig.NiagaraExport.ExportHost))
+                {
+                    CurrentConfig.NiagaraExport.ExportHost = "127.0.0.1";
+                }
                 // Restore default state for devices
                 foreach (var d in CurrentConfig.Devices)
                 {
@@ -93,5 +118,18 @@ public class ConfigurationService
         
         CurrentConfig = new AppConfig();
         return CurrentConfig;
+    }
+
+    public NiagaraManifestExportResult ExportNiagaraManifest(string path, string exportHost)
+    {
+        CurrentConfig.NiagaraExport.ExportPath = path;
+        CurrentConfig.NiagaraExport.ExportHost = exportHost;
+        var result = NiagaraManifestExporter.Export(CurrentConfig.Devices, CurrentConfig.NiagaraExport);
+        _logger.Log(
+            "Info",
+            $"Niagara manifest exported to {result.Path} ({result.DeviceCount} devices, {result.PointCount} points)",
+            "System");
+        Save();
+        return result;
     }
 }

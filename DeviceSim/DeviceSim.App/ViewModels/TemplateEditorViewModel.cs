@@ -27,6 +27,9 @@ public partial class TemplateEditorViewModel : ViewModelBase
     private int _defaultPort;
 
     [ObservableProperty]
+    private byte _defaultDeviceAddress;
+
+    [ObservableProperty]
     private ObservableCollection<PointEditorViewModel> _points;
 
     [ObservableProperty]
@@ -41,6 +44,7 @@ public partial class TemplateEditorViewModel : ViewModelBase
     partial void OnNameChanged(string value) { IsDirty = true; Validate(); }
     partial void OnProtocolChanged(ProtocolType value) { IsDirty = true; Validate(); }
     partial void OnDefaultPortChanged(int value) { IsDirty = true; Validate(); }
+    partial void OnDefaultDeviceAddressChanged(byte value) { IsDirty = true; Validate(); }
 
     public TemplateEditorViewModel(DeviceTemplate template)
     {
@@ -49,6 +53,7 @@ public partial class TemplateEditorViewModel : ViewModelBase
         _name = template.Name;
         _protocol = template.Protocol;
         _defaultPort = template.Network?.Port ?? 502;
+        _defaultDeviceAddress = template.Network?.DeviceAddress ?? 1;
         
         _points = new ObservableCollection<PointEditorViewModel>(
             template.Points.Select(p => new PointEditorViewModel(p))
@@ -71,7 +76,11 @@ public partial class TemplateEditorViewModel : ViewModelBase
         _template.Id = Id;
         _template.Name = Name;
         _template.Protocol = Protocol;
-        _template.Network = new NetworkConfig { Port = DefaultPort };
+        _template.Network = new NetworkConfig 
+        { 
+            Port = DefaultPort, 
+            DeviceAddress = DefaultDeviceAddress 
+        };
         _template.Points = Points.Select(p => p.Point).ToList();
         return _template;
     }
@@ -122,6 +131,8 @@ public partial class TemplateEditorViewModel : ViewModelBase
         return true;
     }
 
-    public static System.Collections.Generic.List<ProtocolType> ProtocolTypes { get; } = System.Enum.GetValues<ProtocolType>().ToList();
+    public static System.Collections.Generic.List<ProtocolType> ProtocolTypes { get; } = System.Enum.GetValues<ProtocolType>()
+        .Where(protocol => protocol != ProtocolType.Hybrid)
+        .ToList();
 
 }

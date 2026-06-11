@@ -32,6 +32,7 @@
                                     <StackPanel Orientation="Horizontal" Spacing="20" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding DeviceName}" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" Foreground="{StaticResource AccentMain}"/>
                                         <TextBlock Text="{Binding Port, StringFormat='Port: {0}'}" VerticalAlignment="Center" Foreground="{StaticResource TextSecondary}"/>
+                                        <TextBlock Text="{Binding DeviceAddress, StringFormat='Address: {0}'}" VerticalAlignment="Center" Foreground="{StaticResource TextSecondary}"/>
                                         <TextBlock Text="{Binding Status, StringFormat='Status: {0}'}" VerticalAlignment="Center" Foreground="{StaticResource TextSecondary}"/>
                                         <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                                             <TextBlock Text="Enabled:" VerticalAlignment="Center" Foreground="{StaticResource TextSecondary}"/>

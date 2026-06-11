@@ -23,7 +23,9 @@ GridGhost is a lightweight, high-performance Modbus (and soon BACnet) device sim
 ## Features
 
 - **Multi-Protocol Support**: Modbus TCP (Fully implemented), BACnet (Roadmap).
-- **Niagara Integration Support**: 
+- **Niagara Integration Support**:
+  - **Manifest Export on Demand**: Export a Niagara-ready JSON manifest from the Devices view with a selectable destination path and host/IP visible to Niagara.
+  - **Workbench Import Module**: Optional Niagara module under `Niagara/gridGhostImporter` uploads the manifest from Workbench and creates/updates Modbus TCP networks, devices, and points.
   - **16-bit Scaled Registers**: Automatic conversion between simulation floats and Modbus Int16/UInt16 using configurable scale/offset.
   - **Packed Booleans**: Define multiple boolean points within a single Modbus register (bit-wise mapping).
   - **Enum Bitfields**: Map integer simulation values to specific bit-ranges in a register for high-density Niagara integration.
@@ -47,6 +49,31 @@ GridGhost is a lightweight, high-performance Modbus (and soon BACnet) device sim
 ## Niagara Integration Guide
 
 GridGhost is optimized for usage with **Tridium Niagara**. It supports the following advanced features:
+
+### Niagara Manifest Export
+The Devices view includes a Niagara export panel:
+
+1. Set **Export host** to the IP address Niagara can reach from the station or VM.
+   GridGhost auto-fills a local non-loopback IP when possible.
+2. Click **Export**.
+3. Choose where to save `niagara-manifest.json`.
+4. In Workbench, use the `gridGhostImporter` service's **Import Now** action and select that JSON file.
+
+GridGhost no longer writes the Niagara manifest automatically during normal configuration saves. The manifest is generated only when **Export** is clicked.
+
+### Niagara Workbench Import Module
+The optional module in `Niagara/gridGhostImporter` adds `gridGhostImporter:GridGhostImportService`.
+
+The Workbench manager can:
+
+- validate a manifest already present in the station shared folder;
+- open a local file picker from **Import Now**;
+- upload the selected manifest to the station `shared` folder;
+- create or update the Modbus TCP network, devices, and points.
+
+The importer writes Niagara Modbus point configuration using the real proxy `dataAddress` slot. Addresses are stored in Niagara **Modbus** format, for example `40011`, `30001`, `00102`, and `10101`.
+
+Input registers (`3xxxx`) and discrete inputs (`1xxxx`) are imported as read-only points. Holding registers (`4xxxx`) and coils (`0xxxx`) can be writable when the manifest marks them writable.
 
 ### 1. 16-bit Scaled Numerics
 Instead of using 32-bit floats (which take two registers), you can use `int16` or `uint16` with a `scale`.

@@ -37,6 +37,7 @@ public partial class TemplatesViewModel : ViewModelBase, IChangeTracker
     {
         _repository = repository;
         _deviceManager = deviceManager;
+        StartBlankConfiguration();
         LoadTemplates();
     }
 
@@ -44,14 +45,7 @@ public partial class TemplatesViewModel : ViewModelBase, IChangeTracker
     {
         if (value != null)
         {
-            // When selection changes, load it into editor (read-only until they click edit? or direct edit?)
-            // Requirement: "Editor (right panel) ... Implement FORM-based editing"
-            // Let's load the editor immediately but maybe we can have a "Save" button.
-            EditorViewModel = new TemplateEditorViewModel(value);
-        }
-        else
-        {
-            EditorViewModel = null;
+            EditorViewModel = new TemplateEditorViewModel(CreateTemplateCopy(value));
         }
     }
 
@@ -64,10 +58,7 @@ public partial class TemplatesViewModel : ViewModelBase, IChangeTracker
     [RelayCommand]
     public void CreateNew()
     {
-        SelectedTemplate = null;
-        var newTemplate = new DeviceTemplate { Name = "New Template", Protocol = ProtocolType.Modbus };
-        // We don't add to collection yet, only when saved.
-        EditorViewModel = new TemplateEditorViewModel(newTemplate);
+        StartBlankConfiguration();
     }
 
     [RelayCommand]
@@ -100,9 +91,9 @@ public partial class TemplatesViewModel : ViewModelBase, IChangeTracker
                 if (index >= 0) Templates[index] = template; 
             }
 
-            SelectedTemplate = template;
             EditorViewModel.ValidationErrors = "Template saved successfully.";
             EditorViewModel.HasErrors = false;
+            EditorViewModel.IsDirty = false;
         }
         catch (Exception ex)
         {
@@ -121,14 +112,14 @@ public partial class TemplatesViewModel : ViewModelBase, IChangeTracker
 
     public void DiscardChanges()
     {
-        if (EditorViewModel != null)
+        if (SelectedTemplate != null)
         {
-            EditorViewModel.IsDirty = false;
+            EditorViewModel = new TemplateEditorViewModel(CreateTemplateCopy(SelectedTemplate));
         }
-        // Force refresh from list to undo edits
-        var temp = SelectedTemplate;
-        SelectedTemplate = null;
-        SelectedTemplate = temp;
+        else
+        {
+            StartBlankConfiguration();
+        }
     }
 
     [RelayCommand]
@@ -155,22 +146,34 @@ public partial class TemplatesViewModel : ViewModelBase, IChangeTracker
     [RelayCommand]
     public async Task CreateInstance()
     {
-        if (SelectedTemplate == null) return;
+        if (EditorViewModel == null) return;
+
+        if (!EditorViewModel.Validate())
+        {
+            return;
+        }
+
+        var template = EditorViewModel.GetTemplate();
         
-        // If modified in editor but not saved?
-        // We should warn or just use what is in file. 
-        // Best to use what is in file to match "Use existing template" behavior.
-        
-        var instance = DeviceInstance.FromTemplate(SelectedTemplate);
+        int port = template.Network?.Port ?? 502;
+        byte devAddr = template.Network?.DeviceAddress ?? 1;
+        if (_deviceManager.GetAll().Any(d => d.Network.Port == port && d.Network.DeviceAddress == devAddr && d.State == DeviceInstance.DeviceState.Running))
+        {
+            var msg = $"Cannot create device on port {port} and Device Address {devAddr}. A running device is already using this combination.";
+            WeakReferenceMessenger.Default.Send(new ShowErrorDialogMessage("Collision", msg));
+            return;
+        }
+
+        var instance = DeviceInstance.FromTemplate(template);
         System.Diagnostics.Debug.WriteLine($"[TemplatesViewModel] Creating instance {instance.Id}");
         _deviceManager.AddInstance(instance);
+        await _deviceManager.StartDeviceAsync(instance.Id);
         System.Diagnostics.Debug.WriteLine($"[TemplatesViewModel] Total templates after create: {Templates.Count}");
+        EditorViewModel.IsDirty = false;
         
         // Auto-navigate to Points view to monitor newly created device
         WeakReferenceMessenger.Default.Send(new NavigationMessage("Points"));
         WeakReferenceMessenger.Default.Send(new SelectDeviceMessage(instance.Id));
-        
-        await Task.CompletedTask;
     }
 
     [RelayCommand]
@@ -231,5 +234,29 @@ public partial class TemplatesViewModel : ViewModelBase, IChangeTracker
                  }
              }
          }
+    }
+
+    private void StartBlankConfiguration()
+    {
+        SelectedTemplate = null;
+        EditorViewModel = new TemplateEditorViewModel(new DeviceTemplate
+        {
+            Name = "Nuovo Dispositivo Custom",
+            Protocol = ProtocolType.Modbus,
+            Network = new NetworkConfig
+            {
+                Port = 502,
+                DeviceAddress = 1
+            }
+        });
+    }
+
+    private static DeviceTemplate CreateTemplateCopy(DeviceTemplate template)
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(template);
+        var copy = System.Text.Json.JsonSerializer.Deserialize<DeviceTemplate>(json) ?? new DeviceTemplate();
+        copy.Id = Guid.NewGuid().ToString();
+        copy.Name = string.IsNullOrWhiteSpace(copy.Name) ? "Nuovo Dispositivo Custom" : $"{copy.Name} Custom";
+        return copy;
     }
 }

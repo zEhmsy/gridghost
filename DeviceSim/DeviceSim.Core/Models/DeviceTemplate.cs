@@ -20,6 +20,7 @@ public class NetworkConfig
 {
     public int Port { get; set; } = 502;
     public string BindIp { get; set; } = "0.0.0.0";
+    public byte DeviceAddress { get; set; } = 1;
 }
 
 public class BacnetDeviceConfig

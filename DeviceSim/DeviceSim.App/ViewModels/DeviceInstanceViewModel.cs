@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -48,10 +49,58 @@ public partial class DeviceInstanceViewModel : ViewModelBase
         {
             if (_instance.Network.Port != value)
             {
+                // Check if another running device is already using this IP + Port + DeviceAddress combo
+                if (_deviceManager.GetAll().Any(d => d.Id != _instance.Id && 
+                                                    d.Network.BindIp == _instance.Network.BindIp &&
+                                                    d.Network.Port == value && 
+                                                    d.Network.DeviceAddress == _instance.Network.DeviceAddress && 
+                                                    d.State == DeviceInstance.DeviceState.Running))
+                {
+                    var msg = $"Device Address {_instance.Network.DeviceAddress} is already running on {_instance.Network.BindIp}:{value}.";
+                    WeakReferenceMessenger.Default.Send(new ShowErrorDialogMessage("Collision", msg));
+                    OnPropertyChanged(nameof(Port)); // Reset UI text
+                    return;
+                }
+
                 _instance.Network.Port = value;
                 OnPropertyChanged();
                 
                 // Restart if running to apply port change
+                if (_instance.State == DeviceInstance.DeviceState.Running)
+                {
+                    _ = _deviceManager.StopDeviceAsync(_instance.Id).ContinueWith(async t => 
+                    {
+                        await _deviceManager.StartDeviceAsync(_instance.Id);
+                    });
+                }
+            }
+        }
+    }
+
+    public byte DeviceAddress
+    {
+        get => _instance.Network.DeviceAddress;
+        set
+        {
+            if (_instance.Network.DeviceAddress != value)
+            {
+                // Check if another running device is already using this IP + Port + DeviceAddress combo
+                if (_deviceManager.GetAll().Any(d => d.Id != _instance.Id && 
+                                                    d.Network.BindIp == _instance.Network.BindIp &&
+                                                    d.Network.Port == _instance.Network.Port && 
+                                                    d.Network.DeviceAddress == value && 
+                                                    d.State == DeviceInstance.DeviceState.Running))
+                {
+                    var msg = $"Device Address {value} is already running on {_instance.Network.BindIp}:{_instance.Network.Port}.";
+                    WeakReferenceMessenger.Default.Send(new ShowErrorDialogMessage("Collision", msg));
+                    OnPropertyChanged(nameof(DeviceAddress)); // Reset UI text
+                    return;
+                }
+
+                _instance.Network.DeviceAddress = value;
+                OnPropertyChanged();
+                
+                // Restart if running to apply change
                 if (_instance.State == DeviceInstance.DeviceState.Running)
                 {
                     _ = _deviceManager.StopDeviceAsync(_instance.Id).ContinueWith(async t => 
@@ -81,6 +130,7 @@ public partial class DeviceInstanceViewModel : ViewModelBase
          OnPropertyChanged(nameof(Enabled));
          OnPropertyChanged(nameof(LastError));
          OnPropertyChanged(nameof(Port));
+         OnPropertyChanged(nameof(DeviceAddress));
          _isUpdatingFromModel = false;
     }
 

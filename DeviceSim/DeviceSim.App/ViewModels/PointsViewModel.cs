@@ -355,7 +355,8 @@ public partial class PointViewModel : ObservableObject
         _store = store;
         _deviceManager = deviceManager;
         
-        _type = def.Type;
+        _type = def.Type == "float32" ? "float" : def.Type;
+        if (def.Type == "float32") { def.Type = "float"; }
         _niagaraType = def.NiagaraType;
         _value = initial.Value;
         _displayValue = initial.DisplayValue;
@@ -406,7 +407,6 @@ public partial class PointViewModel : ObservableObject
         if (_def.OverrideCts != null && _def.Generator?.Type != GenType)
         {
             _def.OverrideCts.Cancel();
-            _def.OverrideCts.Dispose();
             _def.OverrideCts = null;
             _def.OriginalGeneratorType = null;
             _store.UpdateOverrideStatus(DeviceId, Key, null);
@@ -445,6 +445,7 @@ public partial class DevicePointsGroupViewModel : ObservableObject
     public string DeviceId => _instance.Id;
     public string DeviceName => _instance.Name;
     [ObservableProperty] private int _port;
+    [ObservableProperty] private byte _deviceAddress;
 
     [ObservableProperty] private string _status;
     [ObservableProperty] private bool _enabled;
@@ -465,6 +466,7 @@ public partial class DevicePointsGroupViewModel : ObservableObject
         Status = _instance.State.ToString();
         Enabled = _instance.Enabled;
         Port = _instance.Network.Port;
+        DeviceAddress = _instance.Network.DeviceAddress;
     }
 
     [RelayCommand]

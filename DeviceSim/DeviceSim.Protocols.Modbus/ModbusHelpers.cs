@@ -40,7 +40,7 @@ public class LinkedDataStore : ISlaveDataStore
             int numRegs = 1;
             if (p.Modbus.Kind.Trim().ToLower() == "holding" || p.Modbus.Kind.Trim().ToLower() == "input")
             {
-                if (p.Type == "int32" || p.Type == "uint32" || p.Type == "float") 
+                if (p.Type == "int32" || p.Type == "uint32" || p.Type == "float" || p.Type == "float32") 
                     numRegs = 2;
             }
 
@@ -190,12 +190,12 @@ public class ModbusPointSource<T> : IPointSource<T>
                     else
                     {
                         // Handle 32-bit spanning
-                        if (def.Type == "float" || def.Type == "int32" || def.Type == "uint32")
+                        if (def.Type == "float" || def.Type == "float32" || def.Type == "int32" || def.Type == "uint32")
                         {
                             int offset = addr - def.Modbus!.Address;
                             ushort word0, word1;
                             
-                            if (def.Type == "float")
+                            if (def.Type == "float" || def.Type == "float32")
                             {
                                 byte[] b = BitConverter.GetBytes((float)(d * scale));
                                 word0 = (ushort)(b[0] | (b[1] << 8));
@@ -252,14 +252,14 @@ public class ModbusPointSource<T> : IPointSource<T>
                     }
 
                     object val;
-                    if (typeof(T) == typeof(ushort) && (def.Type == "float" || def.Type == "int32" || def.Type == "uint32"))
+                    if (typeof(T) == typeof(ushort) && (def.Type == "float" || def.Type == "float32" || def.Type == "int32" || def.Type == "uint32"))
                     {
                         var pt = _store.GetValue(_deviceId, def.Key);
                         double currentVal = Convert.ToDouble(pt.Value ?? 0);
                         double scale = def.Modbus?.Scale ?? 1.0;
                         
                         ushort word0, word1;
-                        if (def.Type == "float") {
+                        if (def.Type == "float" || def.Type == "float32") {
                             byte[] b = BitConverter.GetBytes((float)(currentVal * scale));
                             word0 = (ushort)(b[0] | (b[1] << 8));
                             word1 = (ushort)(b[2] | (b[3] << 8));
@@ -285,7 +285,7 @@ public class ModbusPointSource<T> : IPointSource<T>
                         newBytes[2] = (byte)(word1 & 0xFF);
                         newBytes[3] = (byte)(word1 >> 8);
                         
-                        if (def.Type == "float") 
+                        if (def.Type == "float" || def.Type == "float32") 
                             val = (double)BitConverter.ToSingle(newBytes, 0) / scale;
                         else if (def.Type == "int32") 
                             val = (double)BitConverter.ToInt32(newBytes, 0) / scale;
@@ -307,7 +307,6 @@ public class ModbusPointSource<T> : IPointSource<T>
                             if (def.OverrideCts != null)
                             {
                                 def.OverrideCts.Cancel();
-                                def.OverrideCts.Dispose();
                                 def.OverrideCts = null;
                             }
                             _store.UpdateOverrideStatus(_deviceId, def.Key, null);
@@ -317,7 +316,6 @@ public class ModbusPointSource<T> : IPointSource<T>
                             if (def.OverrideCts != null)
                             {
                                 def.OverrideCts.Cancel();
-                                def.OverrideCts.Dispose();
                             }
 
                             if (def.OriginalGeneratorType == null || def.Generator.Type != "static")
@@ -332,24 +330,31 @@ public class ModbusPointSource<T> : IPointSource<T>
 
                             Task.Run(async () =>
                             {
-                                try
+                                using (cts)
                                 {
-                                    int remaining = duration;
-                                    while (remaining > 0)
+                                    try
                                     {
-                                        _store.UpdateOverrideStatus(_deviceId, def.Key, $"Override ({remaining}s)");
-                                        await Task.Delay(1000, cts.Token);
-                                        remaining--;
-                                    }
+                                        int remaining = duration;
+                                        while (remaining > 0)
+                                        {
+                                            _store.UpdateOverrideStatus(_deviceId, def.Key, $"Override ({remaining}s)");
+                                            await Task.Delay(1000, cts.Token);
+                                            remaining--;
+                                        }
 
-                                    if (def.Generator.Type == "static") 
-                                        def.Generator.Type = original;
-                                        
-                                    def.OriginalGeneratorType = null;
-                                    def.OverrideCts = null;
-                                    _store.UpdateOverrideStatus(_deviceId, def.Key, null);
+                                        if (def.Generator.Type == "static") 
+                                            def.Generator.Type = original;
+                                            
+                                        def.OriginalGeneratorType = null;
+                                        if (def.OverrideCts == cts)
+                                        {
+                                            def.OverrideCts = null;
+                                        }
+                                        _store.UpdateOverrideStatus(_deviceId, def.Key, null);
+                                    }
+                                    catch (OperationCanceledException) { }
+                                    catch (ObjectDisposedException) { }
                                 }
-                                catch (TaskCanceledException) { }
                             });
                         }
                     }

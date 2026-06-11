@@ -69,6 +69,10 @@ public class DeviceManager
     public void SaveAll()
     {
         _configService.Save(_instances.Values);
+        foreach (var instance in _instances.Values)
+        {
+            _pointStore.UpdatePointDefinitions(instance.Id, instance.Points);
+        }
     }
 
     public async Task RemoveInstanceAsync(string id)
@@ -96,30 +100,39 @@ public class DeviceManager
         {
             if (_runningDevices.ContainsKey(id)) return; // Already running
 
-            // Enforce strictly one running device per port globally across instances
-            if (_instances.Values.Any(d => d.Id != id && d.Network.Port == instance.Network.Port && d.State == DeviceInstance.DeviceState.Running))
+            // Enforce strictly one running device per IP + Port + DeviceAddress combo globally across instances
+            if (_instances.Values.Any(d => d.Id != id && 
+                                           d.Network.BindIp == instance.Network.BindIp &&
+                                           d.Network.Port == instance.Network.Port && 
+                                           d.Network.DeviceAddress == instance.Network.DeviceAddress &&
+                                           d.State == DeviceInstance.DeviceState.Running))
             {
-                var msg = $"Port {instance.Network.Port} is already bound by another running device.";
+                var msg = $"Device Address {instance.Network.DeviceAddress} is already running on {instance.Network.BindIp}:{instance.Network.Port}.";
                 _logger.Log("Error", msg, id);
                 instance.State = DeviceInstance.DeviceState.Faulted;
                 instance.LastError = msg;
                 instance.Enabled = false; // Force disable
                 OnDeviceUpdated?.Invoke(instance);
-                OnError?.Invoke("Port Collision", msg);
+                OnError?.Invoke("Collision", msg);
                 return;
             }
 
             // Check system port
             if (IsPortInUse(instance.Network.Port))
             {
-                var msg = $"Port {instance.Network.Port} is bound by another application on the host.";
-                _logger.Log("Error", msg, id);
-                instance.State = DeviceInstance.DeviceState.Faulted;
-                instance.LastError = msg;
-                instance.Enabled = false; // Force disable
-                OnDeviceUpdated?.Invoke(instance);
-                OnError?.Invoke("Port In Use", msg);
-                return;
+                // Is it in use by our own running devices?
+                bool isUsedByUs = _instances.Values.Any(d => d.Id != id && d.Network.Port == instance.Network.Port && d.State == DeviceInstance.DeviceState.Running);
+                if (!isUsedByUs)
+                {
+                    var msg = $"Port {instance.Network.Port} is bound by another application on the host.";
+                    _logger.Log("Error", msg, id);
+                    instance.State = DeviceInstance.DeviceState.Faulted;
+                    instance.LastError = msg;
+                    instance.Enabled = false; // Force disable
+                    OnDeviceUpdated?.Invoke(instance);
+                    OnError?.Invoke("Port In Use", msg);
+                    return;
+                }
             }
 
             // Linux Privileged Port Check
@@ -218,6 +231,18 @@ public class DeviceManager
                 
                 // 1. Stop Simulation
                 await _scheduler.StopDeviceSimulationAsync(id);
+
+                // Cancel all active overrides for the device points
+                foreach (var point in instance.Points)
+                {
+                    if (point.OverrideCts != null)
+                    {
+                        point.OverrideCts.Cancel();
+                        point.OverrideCts = null;
+                        point.OriginalGeneratorType = null;
+                        _pointStore.UpdateOverrideStatus(id, point.Key, null);
+                    }
+                }
 
                 // 2. Cancel adapter CT
                 running.Cts.Cancel();

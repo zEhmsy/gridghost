@@ -1,0 +1,12 @@
+GridGhostImportService=GridGhost Import Service
+manifestOrd=Manifest Ord
+stationRoot=Station Root
+networkSlotName=Network Slot Name
+lastImportStatus=Last Import Status
+lastError=Last Error
+lastImportedAt=Last Imported At
+createdCount=Created Count
+updatedCount=Updated Count
+skippedCount=Skipped Count
+importNow=Import Now
+validateManifest=Validate Manifest

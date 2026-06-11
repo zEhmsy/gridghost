@@ -12,6 +12,7 @@ public interface IPointStore
     
     // Bulk operations
     void InitializePoints(string deviceId, IEnumerable<PointDefinition> points);
+    void UpdatePointDefinitions(string deviceId, IEnumerable<PointDefinition> points);
     void RemoveDevice(string deviceId);
     
     // Events

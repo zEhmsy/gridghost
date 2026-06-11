@@ -25,6 +25,51 @@ public class PointStore : IPointStore
         _store.AddOrUpdate(deviceId, devicePoints, (k, v) => devicePoints);
     }
 
+    public void UpdatePointDefinitions(string deviceId, IEnumerable<PointDefinition> points)
+    {
+        if (_store.TryGetValue(deviceId, out var devicePoints))
+        {
+            var activeKeys = new System.Collections.Generic.HashSet<string>();
+            foreach (var point in points)
+            {
+                activeKeys.Add(point.Key);
+                if (devicePoints.TryGetValue(point.Key, out var existing))
+                {
+                    if (existing.ExpectedType != point.Type)
+                    {
+                        existing.ExpectedType = point.Type;
+                        existing.Value = point.Type == "bool" ? false : 0.0;
+                        existing.LastUpdated = DateTime.UtcNow;
+                        OnPointChanged?.Invoke(deviceId, point.Key, existing);
+                    }
+                }
+                else
+                {
+                    var newPt = new PointValue { 
+                        Value = point.Type == "bool" ? false : 0.0, 
+                        ExpectedType = point.Type, 
+                        Source = PointSource.Manual 
+                    };
+                    devicePoints.TryAdd(point.Key, newPt);
+                    OnPointChanged?.Invoke(deviceId, point.Key, newPt);
+                }
+            }
+            
+            // Remove points that are no longer defined
+            foreach (var key in devicePoints.Keys)
+            {
+                if (!activeKeys.Contains(key))
+                {
+                    devicePoints.TryRemove(key, out _);
+                }
+            }
+        }
+        else
+        {
+            InitializePoints(deviceId, points);
+        }
+    }
+
     public void RemoveDevice(string deviceId)
     {
         _store.TryRemove(deviceId, out _);

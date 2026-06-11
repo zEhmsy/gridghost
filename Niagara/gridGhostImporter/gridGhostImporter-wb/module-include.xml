@@ -1,0 +1,8 @@
+<types>
+  <type class="com.sitecVendor.gridGhostImporter.wb.BGridGhostImportManager"
+        name="GridGhostImportManager">
+    <agent>
+      <on type="gridGhostImporter:GridGhostImportService"/>
+    </agent>
+  </type>
+</types>
