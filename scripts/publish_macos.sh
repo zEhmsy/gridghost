@@ -48,9 +48,9 @@ for ARCH in "${ARCHS[@]}"; do
     <key>CFBundleName</key>
     <string>GridGhost</string>
     <key>CFBundleVersion</key>
-    <string>2.1.0</string>
+    <string>3.0.0</string>
     <key>CFBundleShortVersionString</key>
-    <string>2.1.0</string>
+    <string>3.0.0</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleIconFile</key>

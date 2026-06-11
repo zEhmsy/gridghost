@@ -4,7 +4,7 @@
 [Setup]
 AppId={{D37B1C6E-42E1-4D3B-BA3A-8B2376C68551}
 AppName=GridGhost
-AppVersion=2.1.0
+AppVersion=3.0.0
 AppPublisher=zEhmsy
 DefaultDirName={autopf}\GridGhost
 DefaultGroupName=GridGhost
